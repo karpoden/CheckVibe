@@ -8,17 +8,21 @@ datasource db {
 }
 
 model User {
-  id          Int     @id @default(autoincrement())
-  telegram_id String  @unique
-  username    String
-  audios      Audio[]
+  id           Int      @id @default(autoincrement())
+  telegram_id  String   @unique
+  username     String?
+  audios       Audio[]
+  createdAt    DateTime @default(now())
 }
 
 model Audio {
-  id        Int      @id @default(autoincrement())
-  title     String
-  file_url  String
-  createdAt DateTime @default(now())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  id           Int      @id @default(autoincrement())
+  title        String
+  file_url     String
+  format       String   // mp3, wav, ogg и т.п.
+  vibeEnabled  Boolean  @default(false)
+  vibeCount    Int      @default(0)
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int
+  createdAt    DateTime @default(now())
 }

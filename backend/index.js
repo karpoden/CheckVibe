@@ -7,11 +7,8 @@ const prisma = new PrismaClient();
 
 const app = express();
 const PORT = 3001;
-
-const express = require("express");
-const multer = require("multer");
-const cors = require("cors");
-
+const trackRoutes = require('./routes/tracks');
+const userRoutes = require('./routes/users');
 
 // Middlewares
 app.use(cors());
@@ -20,6 +17,8 @@ app.use(bodyParser.json());
 app.use("/uploads", express.static("uploads"));
 
 app.use('/uploads', express.static('uploads'));
+app.use('/api/tracks', trackRoutes);
+app.use('/api/users', userRoutes);
 
 
 // Multer config for file uploads
@@ -33,26 +32,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-
-app.post("/upload", upload.single("audio"), async (req, res) => {
-  const { title, telegram_id, username } = req.body;
-  
-  if (!req.file) return res.status(400).json({ error: "Файл не передан" });
-  
-  // пока просто возвращаем ответ
-  res.status(200).json({
-    message: "Файл успешно загружен",
-    data: {
-      title,
-      filename: req.file.filename,
-    },
-  });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
-
 
 // === Routes ===
 
