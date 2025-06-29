@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getUser, getTracksByUser, deleteTrack, promoteTrack } from "../api";
 import { Star, Trash2, TrendingUp, Home, Plus, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import TrackPlayer from "../components/TrackPlayer";
 
 const TELEGRAM_ID = "123456"; // временный ID
 
@@ -154,7 +155,10 @@ export default function Profile() {
                 <div style={{ fontWeight: 600, fontSize: "1.08em", marginBottom: 6 }}>
                   {track.title}
                 </div>
-                <audio src={track.fileUrl} controls style={{ width: "100%", marginBottom: 8, borderRadius: 6 }} />
+                <TrackPlayer
+                  trackUrl={track.fileUrl} // URL трека src={track.fileUrl}
+                  avatarUrl={"/vite.svg"} // или свойство с аватаркой автора, если есть
+                />
                 <div style={{ display: "flex", gap: 16, alignItems: "center", fontSize: "0.97em", marginBottom: 6 }}>
                   <span>Лайки: <b style={{ color: "#6a82fb" }}>{track.likes}</b></span>
                   <span>Просмотры: <b style={{ color: "#fc5c7d" }}>{track.views}</b></span>
