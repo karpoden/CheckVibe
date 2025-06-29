@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import TinderCard from "react-tinder-card";
-import axios from "axios";
+import { getTracksByUser, likeTrack } from "./api";
 
-const TELEGRAM_ID = "123456";
+const TELEGRAM_ID = "123456"; // временный ID
 
 function SwipePlayer() {
   const [tracks, setTracks] = useState([]);
@@ -14,37 +14,37 @@ function SwipePlayer() {
 
   const fetchTracks = async () => {
     try {
-      const res = await axios.get("http://localhost:5173/api/tracks/all");
-      setTracks(res.data.reverse()); // последний вверх
+      // Получаем треки пользователя (можно заменить на другой источник)
+      const res = await getTracksByUser(TELEGRAM_ID);
+      setTracks(res.data.reverse());
+      setIndex(0);
     } catch (err) {
-      console.error("Fetch error", err);
+      setTracks([]);
     }
   };
 
   const handleSwipe = async (dir, track) => {
     if (dir === "right") {
       try {
-        await axios.post(`http://localhost:5173/api/tracks/${track._id}/like`, {
-          telegramId: TELEGRAM_ID,
-        });
-        console.log("Liked:", track.name);
+        await likeTrack(track.id, TELEGRAM_ID);
+        console.log("Liked:", track.title);
       } catch (err) {
         console.error("Like error", err);
       }
     } else {
-      console.log("Skipped:", track.name);
+      console.log("Skipped:", track.title);
     }
     setIndex((prev) => prev + 1);
   };
 
   return (
     <div className="swipe-container" style={{ width: 400, margin: "0 auto" }}>
-      {tracks.length === 0 ? (
-        <p>Загрузка треков...</p>
+      {tracks.length === 0 || index >= tracks.length ? (
+        <p>Нет треков для отображения</p>
       ) : (
         tracks.slice(index).map((track) => (
           <TinderCard
-            key={track._id}
+            key={track.id}
             onSwipe={(dir) => handleSwipe(dir, track)}
             preventSwipe={["up", "down"]}
           >
@@ -57,14 +57,10 @@ function SwipePlayer() {
                 marginBottom: 20,
               }}
             >
-              <h3>{track.name}</h3>
-              <audio controls src={`http://localhost:5173/uploads/${track.filename}`} />
-              <p>Автор: {track.user?.telegramId}</p>
-              {track.user?.canReceiveVibes ? (
-                <span style={{ color: "green" }}>✅ Принимает VibeCoins</span>
-              ) : (
-                <span style={{ color: "gray" }}>🚫 Не принимает VibeCoins</span>
-              )}
+              <h3>{track.title}</h3>
+              <audio controls src={track.fileUrl} />
+              <p>Автор: {track.user?.telegram_id || "Неизвестно"}</p>
+              <span style={{ color: "green" }}>VibeCoins: {track.likes}</span>
             </div>
           </TinderCard>
         ))

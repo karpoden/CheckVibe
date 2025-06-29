@@ -11,15 +11,14 @@ router.get('/:telegramId', async (req, res) => {
     });
 
     if (!user) {
-      return res.json({ vibeCoins: 0, canReceiveVibes: false });
+      return res.json({ vibeCoins: 0 });
     }
 
     res.json({
       id: user.id,
-      telegramId: user.telegram_id,
+      telegram_id: user.telegram_id,
       username: user.username,
       vibeCoins: user.vibeCoins,
-      canReceiveVibes: user.canReceiveVibes,
     });
   } catch (err) {
     console.error(err);

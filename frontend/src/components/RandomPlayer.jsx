@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import TinderCard from 'react-tinder-card';
-import axios from 'axios';
+import { getRandomTrack, likeTrack } from '../api';
 
 const TELEGRAM_ID = '123456'; // временный ID
 
@@ -11,10 +11,10 @@ export default function RandomPlayer() {
   const fetchTrack = async () => {
     try {
       setIsLoading(true);
-      const res = await axios.get('http://localhost:3001/api/tracks/random');
+      const res = await getRandomTrack();
       setTrack(res.data);
     } catch (err) {
-      console.error('Ошибка при получении трека:', err);
+      setTrack(null);
     } finally {
       setIsLoading(false);
     }
@@ -25,15 +25,13 @@ export default function RandomPlayer() {
 
     if (direction === 'right') {
       try {
-        await axios.post(`http://localhost:3001/api/tracks/${track._id}/like`, {
-          telegramId: TELEGRAM_ID,
-        });
+        await likeTrack(track.id, TELEGRAM_ID);
       } catch (err) {
-        console.error('Ошибка при лайке:', err);
+        // ignore
       }
     }
 
-    await fetchTrack(); // загрузить следующий трек
+    await fetchTrack();
   };
 
   useEffect(() => {
@@ -46,14 +44,14 @@ export default function RandomPlayer() {
   return (
     <div className="flex flex-col items-center">
       <TinderCard
-        key={track._id}
+        key={track.id}
         onSwipe={handleSwipe}
         preventSwipe={['up', 'down']}
       >
         <div className="bg-white shadow-xl rounded-2xl p-4 w-72 text-center">
-          <h2 className="text-xl font-bold mb-2">{track.name}</h2>
-          <p className="text-sm text-gray-500 mb-2">@{track.user?.telegramId}</p>
-          <audio controls src={`http://localhost:3001/uploads/${track.filename}`} />
+          <h2 className="text-xl font-bold mb-2">{track.title}</h2>
+          <p className="text-sm text-gray-500 mb-2">@{track.user?.telegram_id}</p>
+          <audio controls src={track.fileUrl} />
           <p className="text-xs mt-2 text-gray-400">Свайпайте → если нравится</p>
         </div>
       </TinderCard>

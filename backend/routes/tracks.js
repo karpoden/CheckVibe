@@ -2,41 +2,48 @@ const express = require('express');
 const multer = require('multer');
 const { PrismaClient } = require('@prisma/client');
 const path = require('path');
-
+const fs = require('fs');
 const router = express.Router();
 const prisma = new PrismaClient();
-const upload = multer({ dest: 'uploads/' });
+
+const storage = multer.diskStorage({
+  destination: 'uploads/',
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
+const upload = multer({ storage });
 
 // Загрузка трека
-router.post('/upload', upload.single('file'), async (req, res) => {
+router.post('/upload', upload.single('audio'), async (req, res) => {
   try {
     const { title, telegramId } = req.body;
     const file = req.file;
 
-    if (!file || !title || !telegramId) {
-      return res.status(400).json({ error: 'Недостаточно данных' });
+    if (!title || !telegramId || !file) {
+      return res.status(400).json({ error: 'title, telegramId и файл обязательны' });
     }
 
-    // 1. Гарантируем наличие пользователя
+    // Найти или создать пользователя
     const user = await prisma.user.upsert({
-      where: { telegramId },
+      where: { telegram_id: telegramId },
       update: {},
-      create: { telegramId },
+      create: { telegram_id: telegramId }
     });
 
-    // 2. Сохраняем аудио в БД
-    const audio = await prisma.audio.create({
+    const newTrack = await prisma.audio.create({
       data: {
         title,
         fileUrl: `/uploads/${file.filename}`,
         userId: user.id,
       },
+      include: { user: true }
     });
 
-    res.json({ success: true, audio });
-  } catch (err) {
-    console.error('Ошибка при загрузке трека:', err);
-    res.status(500).json({ error: 'Серверная ошибка' });
+    res.status(201).json(newTrack);
+  } catch (error) {
+    console.error('[UPLOAD ERROR]', error);
+    res.status(500).json({ error: 'Ошибка при загрузке трека' });
   }
 });
 
@@ -55,8 +62,8 @@ router.get('/random', async (req, res) => {
 
     res.json(audio);
   } catch (err) {
-    console.error('Ошибка при получении случайного трека:', err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    console.error('[RANDOM ERROR]', err);
+    res.status(500).json({ error: 'Ошибка при получении случайного трека' });
   }
 });
 
@@ -89,7 +96,7 @@ router.post('/:id/like', async (req, res) => {
   }
 });
 
-// Донат пользователю
+// Донат пользователю (по id трека)
 router.post('/:id/donate', async (req, res) => {
   const { fromTelegramId } = req.body;
 
@@ -102,11 +109,12 @@ router.post('/:id/donate', async (req, res) => {
       return res.status(400).json({ error: 'Недостаточно VibeCoin' });
     }
 
-    const receiver = await prisma.user.findUnique({
+    const audio = await prisma.audio.findUnique({
       where: { id: req.params.id },
+      include: { user: true }
     });
 
-    if (!receiver) {
+    if (!audio || !audio.user) {
       return res.status(404).json({ error: 'Получатель не найден' });
     }
 
@@ -116,7 +124,7 @@ router.post('/:id/donate', async (req, res) => {
         data: { vibeCoins: { decrement: 5 } },
       }),
       prisma.user.update({
-        where: { id: receiver.id },
+        where: { id: audio.user.id },
         data: { vibeCoins: { increment: 5 } },
       }),
     ]);

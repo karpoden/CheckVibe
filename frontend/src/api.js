@@ -1,34 +1,38 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5173/api';
+const API_BASE = '/api';
 
 // Загрузка трека
-export const uploadAudio = (formData) =>
-  axios.post(`${API_BASE}/audios/upload`, formData, {
+export const uploadTrack = (formData) =>
+  axios.post(`${API_BASE}/tracks/upload`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 
 // Получить треки пользователя
-export const getAudiosByUser = (telegramId) =>
-  axios.get(`${API_BASE}/audioss/by-user/${telegramId}`);
+export const getTracksByUser = (telegramId) =>
+  axios.get(`${API_BASE}/tracks/by-user/${telegramId}`);
 
-// Получить все треки
-export const getAllAudios = () =>
-  axios.get(`${API_BASE}/audios/all`);
+// Получить случайный трек
+export const getRandomTrack = () =>
+  axios.get(`${API_BASE}/tracks/random`);
 
 // Лайкнуть трек
-export const likeAudio = (Id, telegramId) =>
-  axios.post(`${API_BASE}/audios/${Id}/like`, { telegramId });
+export const likeTrack = (id, telegramId) =>
+  axios.post(`${API_BASE}/tracks/${id}/like`, { telegramId });
+
+// Донат треку
+export const donateTrack = (id, fromTelegramId) =>
+  axios.post(`${API_BASE}/tracks/${id}/donate`, { fromTelegramId });
 
 // Получить пользователя
 export const getUser = (telegramId) =>
   axios.get(`${API_BASE}/users/${telegramId}`);
 
-// Default экспорт на всякий случай
 export default {
-  uploadAudio,
-  getAudiosByUser,
-  getAllAudios,
-  likeAudio,
+  uploadTrack,
+  getTracksByUser,
+  getRandomTrack,
+  likeTrack,
+  donateTrack,
   getUser,
 };
