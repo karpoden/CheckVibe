@@ -50,17 +50,64 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
 // Получить случайный трек
 router.get('/random', async (req, res) => {
   try {
-    const total = await prisma.audio.count();
-    if (total === 0) return res.status(404).json({ error: 'Нет треков' });
+    const { telegramId } = req.query;
 
-    const randomIndex = Math.floor(Math.random() * total);
-    const [audio] = await prisma.audio.findMany({
-      skip: randomIndex,
-      take: 1,
-      include: { user: true },
+    let excludeUserId = null;
+    let ratedAudioIds = [];
+    let user = null;
+    if (telegramId) {
+      user = await prisma.user.findUnique({
+        where: { telegram_id: telegramId }
+      });
+      if (user) {
+        excludeUserId = user.id;
+        const ratings = await prisma.trackRating.findMany({
+          where: { userId: user.id },
+          select: { audioId: true }
+        });
+        ratedAudioIds = ratings.map(r => r.audioId);
+      }
+    }
+
+    const tracks = await prisma.audio.findMany({
+      where: {
+        ...(excludeUserId && { userId: { not: excludeUserId } }),
+        ...(ratedAudioIds.length > 0 && { id: { notIn: ratedAudioIds } })
+      }
     });
 
-    res.json(audio);
+    if (tracks.length === 0) {
+      return res.status(404).json({ error: 'Нет новых треков. Хотите начать заново?', canReset: true });
+    }
+
+    // Считаем среднее число оценок
+    const avgRatings = tracks.reduce((sum, t) => sum + t.likes + t.dislikes, 0) / tracks.length;
+
+    // Вес: promote + лайки - дизлайки + boost если мало оценок
+    const weightedTracks = tracks.map(track => {
+      const promote = track.views || 0;
+      const likes = track.likes || 0;
+      const dislikes = track.dislikes || 0;
+      let weight = 1 + promote * 2 + likes - dislikes * 2;
+
+      // Boost если у трека мало оценок относительно среднего
+      const totalRatings = likes + dislikes;
+      if (totalRatings < avgRatings * 0.5) weight += 5;
+
+      weight = Math.max(weight, 1);
+      return { track, weight };
+    });
+
+    // Лотерея по весам
+    const lottery = [];
+    weightedTracks.forEach(({ track, weight }) => {
+      for (let i = 0; i < weight; i++) {
+        lottery.push(track);
+      }
+    });
+
+    const randomTrack = lottery[Math.floor(Math.random() * lottery.length)];
+    res.json(randomTrack);
   } catch (err) {
     console.error('[RANDOM ERROR]', err);
     res.status(500).json({ error: 'Ошибка при получении случайного трека' });
@@ -78,20 +125,61 @@ router.post('/:id/like', async (req, res) => {
     });
     if (!audio) return res.status(404).json({ error: 'audio not found' });
 
-    await prisma.audio.update({
-      where: { id: audio.id },
-      data: { likes: { increment: 1 } },
-    });
-
-    await prisma.user.upsert({
+    const user = await prisma.user.upsert({
       where: { telegram_id: telegramId },
       update: { vibeCoins: { increment: 1 } },
       create: { telegram_id: telegramId, vibeCoins: 1 },
     });
 
+    await prisma.audio.update({
+      where: { id: audio.id },
+      data: { likes: { increment: 1 } },
+    });
+
+    await prisma.trackRating.upsert({
+      where: { userId_audioId: { userId: user.id, audioId: audio.id } },
+      update: {},
+      create: { userId: user.id, audioId: audio.id }
+    });
+
     res.json({ success: true });
   } catch (err) {
     console.error('Ошибка при лайке трека:', err);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Дизлайк трека
+router.post('/:id/dislike', async (req, res) => {
+  const { telegramId } = req.body;
+
+  try {
+    const audio = await prisma.audio.findUnique({
+      where: { id: req.params.id },
+      include: { user: true },
+    });
+    if (!audio) return res.status(404).json({ error: 'audio not found' });
+
+    const user = await prisma.user.upsert({
+      where: { telegram_id: telegramId },
+      update: {},
+      create: { telegram_id: telegramId },
+    });
+
+    await prisma.audio.update({
+      where: { id: audio.id },
+      data: { dislikes: { increment: 1 } },
+    });
+
+    await prisma.trackRating.upsert({
+      where: { userId_audioId: { userId: user.id, audioId: audio.id } },
+      update: {},
+      create: { userId: user.id, audioId: audio.id }
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Ошибка при дизлайке трека:', err);
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
@@ -144,6 +232,17 @@ router.post('/:id/promote', async (req, res) => {
     console.error('Ошибка при продвижении трека:', err);
     res.status(500).json({ error: 'Ошибка сервера' });
   }
+});
+
+router.post('/reset-ratings', async (req, res) => {
+  const { telegramId } = req.body;
+  if (!telegramId) return res.status(400).json({ error: 'Нет telegramId' });
+
+  const user = await prisma.user.findUnique({ where: { telegram_id: telegramId } });
+  if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
+
+  await prisma.trackRating.deleteMany({ where: { userId: user.id } });
+  res.json({ success: true });
 });
 
 // Донат пользователю (по id трека)
