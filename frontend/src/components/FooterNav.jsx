@@ -5,10 +5,10 @@ export default function FooterNav() {
   const { pathname } = useLocation();
 
   const linkClass = (path) =>
-    `flex flex-col items-center text-sm ${pathname === path ? 'text-blue-600' : 'text-gray-400'}`;
+    `footer-link${pathname === path ? ' active' : ''}`;
 
   return (
-    <nav className="flex justify-around w-full py-2 border-t bg-white shadow-md">
+    <nav className="footer-nav">
       <Link to="/" className={linkClass('/')}>
         <Home /> Home
       </Link>

@@ -93,3 +93,79 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Неоновая навигация для футера */
+.footer-nav {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  padding: 12px 0;
+  border-top: 1.5px solid #6a82fb33;
+  background: rgba(30,32,40,0.97);
+  box-shadow: 0 0 24px #6a82fb22;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+}
+
+.footer-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.08em;
+  font-weight: 500;
+  color: #b3b3b3;
+  text-decoration: none;
+  transition: color 0.2s, text-shadow 0.2s;
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+
+.footer-link.active {
+  color: #fff;
+  text-shadow: 0 0 8px #6a82fb, 0 0 2px #fc5c7d;
+  background: linear-gradient(90deg, #6a82fb33 0%, #fc5c7d33 100%);
+}
+
+.footer-link svg {
+  margin-bottom: 2px;
+  stroke-width: 2.2;
+  width: 26px;
+  height: 26px;
+  filter: drop-shadow(0 0 6px #6a82fb44);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(120deg, #232526 0%, #6a82fb 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: -120px;
+  left: -120px;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, #fc5c7d 0%, transparent 70%);
+  opacity: 0.18;
+  z-index: 0;
+  pointer-events: none;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  bottom: -120px;
+  right: -120px;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, #6a82fb 0%, transparent 70%);
+  opacity: 0.18;
+  z-index: 0;
+  pointer-events: none;
+}

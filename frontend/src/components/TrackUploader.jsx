@@ -26,14 +26,43 @@ export default function TrackUploader() {
     }
   };
 
+  const inputStyle = {
+    padding: "10px",
+    borderRadius: "8px",
+    border: "1.5px solid #6a82fb55",
+    marginBottom: "12px",
+    fontSize: "1em",
+    background: "#232526",
+    color: "#fff",
+    outline: "none",
+    width: "100%",
+    boxSizing: "border-box"
+  };
+
+  const buttonStyle = {
+    background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
+    color: "#fff",
+    boxShadow: "0 0 12px #6a82fb88",
+    border: "none",
+    padding: "12px 0",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    fontSize: "1.1em",
+    cursor: "pointer",
+    transition: "box-shadow 0.2s",
+    width: "100%",
+    marginTop: "8px"
+  };
+
   return (
-    <form onSubmit={handleUpload} className="flex flex-col gap-3 w-80 p-4 bg-white shadow-md rounded">
+    <form onSubmit={handleUpload} style={{ display: "flex", flexDirection: "column", gap: 0 }}>
       <input
         type="text"
         placeholder="Название трека"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         required
+        style={inputStyle}
       />
       <input
         type="text"
@@ -41,15 +70,17 @@ export default function TrackUploader() {
         value={telegramId}
         onChange={(e) => setTelegramId(e.target.value)}
         required
+        style={inputStyle}
       />
       <input
         type="file"
         accept="audio/*"
         onChange={(e) => setAudio(e.target.files[0])}
         required
+        style={inputStyle}
       />
-      <button type="submit" className="bg-blue-600 text-white py-1 rounded">Загрузить</button>
-      {message && <p className="text-sm text-gray-700">{message}</p>}
+      <button type="submit" style={buttonStyle}>Загрузить</button>
+      {message && <p style={{ color: "#fff", marginTop: 8, textAlign: "center" }}>{message}</p>}
     </form>
   );
 }
