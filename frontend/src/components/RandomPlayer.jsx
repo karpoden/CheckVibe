@@ -1,9 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import TinderCard from 'react-tinder-card';
 import { getRandomTrack, likeTrack, donateTrack, getUser, dislikeTrack } from '../api';
-import { Star } from 'lucide-react';
+
 import TrackPlayer from "./TrackPlayer";
 import axios from 'axios';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Plus, User, Star } from 'lucide-react';
 
 const TELEGRAM_ID = '123456'; // временный ID
 
@@ -14,6 +16,7 @@ export default function RandomPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const cardRef = useRef();
   const [noTracks, setNoTracks] = useState(false);
+  const location = useLocation();
 
   // Получить свои VibeCoins
   const fetchMyCoins = async () => {
@@ -58,6 +61,28 @@ export default function RandomPlayer() {
     } catch (err) {}
     await fetchTrack();
   };
+
+    const navBtnStyle = (active) => ({
+    background: active
+      ? "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)"
+      : "#232526",
+    color: "#fff",
+    boxShadow: active
+      ? "0 0 12px #6a82fb88"
+      : "0 0 8px #fc5c7d44",
+    border: active
+      ? "none"
+      : "1.5px solid #fc5c7d88",
+    padding: "10px 18px",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    fontSize: "1.25em",
+    cursor: "pointer",
+    transition: "box-shadow 0.2s, background 0.2s",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  });
 
   // Дизлайк
   const handleDislike = async () => {
@@ -301,6 +326,18 @@ export default function RandomPlayer() {
         >
           👍
         </button>
+      </div>
+            {/* Навигация под лайком/дизлайком */}
+      <div style={{ display: "flex", gap: 24, marginTop: 28 }}>
+        <Link to="/" style={navBtnStyle(location.pathname === "/")}>
+          <Home size={28} />
+        </Link>
+        <Link to="/add" style={navBtnStyle(location.pathname === "/add")}>
+          <Plus size={28} />
+        </Link>
+        <Link to="/profile" style={navBtnStyle(location.pathname === "/profile")}>
+          <User size={28} />
+        </Link>
       </div>
     </div>
   );
