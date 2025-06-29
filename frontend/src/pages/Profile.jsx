@@ -161,7 +161,7 @@ export default function Profile() {
                 />
                 <div style={{ display: "flex", gap: 16, alignItems: "center", fontSize: "0.97em", marginBottom: 6 }}>
                   <span>Лайки: <b style={{ color: "#6a82fb" }}>{track.likes}</b></span>
-                  <span>Просмотры: <b style={{ color: "#fc5c7d" }}>{track.views}</b></span>
+                  <span>Продвижение: <b style={{ color: "#fc5c7d" }}>{track.views}</b></span>
                 </div>
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                   <button
