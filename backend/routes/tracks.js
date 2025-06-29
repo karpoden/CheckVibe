@@ -96,6 +96,56 @@ router.post('/:id/like', async (req, res) => {
   }
 });
 
+// удаление трека
+router.delete('/:id', async (req, res) => {
+  try {
+    const track = await prisma.audio.findUnique({ where: { id: req.params.id } });
+    if (!track) return res.status(404).json({ error: 'Трек не найден' });
+
+    // Удалить файл с диска (опционально)
+    const filePath = path.join(__dirname, '..', track.fileUrl);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+
+    await prisma.audio.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Ошибка при удалении трека:', err);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Продвижение трека 
+router.post('/:id/promote', async (req, res) => {
+  const { telegramId, amount } = req.body;
+  const promoteAmount = Number(amount) || 1;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { telegram_id: telegramId } });
+    if (!user || user.vibeCoins < promoteAmount) {
+      return res.status(400).json({ error: 'Недостаточно VibeCoins' });
+    }
+
+    const audio = await prisma.audio.findUnique({ where: { id: req.params.id } });
+    if (!audio) return res.status(404).json({ error: 'Трек не найден' });
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: { vibeCoins: { decrement: promoteAmount } },
+      }),
+      prisma.audio.update({
+        where: { id: audio.id },
+        data: { views: { increment: promoteAmount } }, // views как "продвижение"
+      }),
+    ]);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Ошибка при продвижении трека:', err);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 // Донат пользователю (по id трека)
 router.post('/:id/donate', async (req, res) => {
   const { fromTelegramId } = req.body;

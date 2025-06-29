@@ -24,6 +24,14 @@ export const likeTrack = (id, telegramId) =>
 export const donateTrack = (id, fromTelegramId) =>
   axios.post(`${API_BASE}/tracks/${id}/donate`, { fromTelegramId });
 
+// Удалить трек 
+export const deleteTrack = (id) =>
+  axios.delete(`/api/tracks/${id}`);
+
+// Продвинуть трек
+export const promoteTrack = (id, telegramId, amount) =>
+  axios.post(`/api/tracks/${id}/promote`, { telegramId, amount });
+
 // Получить пользователя
 export const getUser = (telegramId) =>
   axios.get(`${API_BASE}/users/${telegramId}`);
