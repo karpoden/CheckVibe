@@ -1,4 +1,5 @@
-import { useState } from 'react';
+// import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { uploadTrack } from '../api';
 
 export default function TrackUploader() {
@@ -7,19 +8,29 @@ export default function TrackUploader() {
   const [audio, setAudio] = useState(null);
   const [message, setMessage] = useState('');
 
+
+  useEffect(() => {
+    const tg = window.Telegram?.WebApp;
+    const id = tg?.initDataUnsafe?.user?.id;
+
+    if (id) {
+      setTelegramId(String(id));
+    }
+  }, []);
+
   const handleUpload = async (e) => {
     e.preventDefault();
 
     const formData = new FormData();
     formData.append('title', title);
-    formData.append('telegramId', telegramId);
+    // formData.append('telegramId', telegramId);
     formData.append('audio', audio);
 
     try {
       await uploadTrack(formData);
       setMessage('✅ Трек загружен');
       setTitle('');
-      setTelegramId('');
+      setTelegramId(telegramId);
       setAudio(null);
     } catch (err) {
       setMessage('❌ Ошибка при загрузке');
@@ -64,14 +75,14 @@ export default function TrackUploader() {
         required
         style={inputStyle}
       />
-      <input
+      {/* <input
         type="text"
         placeholder="Telegram ID"
         value={telegramId}
         onChange={(e) => setTelegramId(e.target.value)}
         required
         style={inputStyle}
-      />
+      /> */}
       <input
         type="file"
         accept="audio/*"

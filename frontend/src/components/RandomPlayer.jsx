@@ -7,7 +7,9 @@ import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Plus, User, Star } from 'lucide-react';
 
-const TELEGRAM_ID = '123456'; // временный ID
+// const TELEGRAM_ID = '123456'; // временный ID
+const tg = window.Telegram.WebApp;
+const TELEGRAM_ID = tg.initDataUnsafe.user?.id;
 
 export default function RandomPlayer() {
   const [track, setTrack] = useState(null);

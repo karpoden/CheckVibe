@@ -4,7 +4,9 @@ import { Star, Trash2, TrendingUp, Home, Plus, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import TrackPlayer from "../components/TrackPlayer";
 
-const TELEGRAM_ID = "123456"; // временный ID
+const tg = window.Telegram.WebApp;
+const TELEGRAM_ID = tg.initDataUnsafe.user?.id;
+//const TELEGRAM_ID = "123456"; // временный ID
 
 export default function Profile() {
   const [myCoins, setMyCoins] = useState(0);
