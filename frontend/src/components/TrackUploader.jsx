@@ -23,6 +23,10 @@ export default function TrackUploader() {
   const handleUpload = async (e) => {
     e.preventDefault();
 
+    console.log('telegramId:', telegramId);
+    console.log('title:', title);
+    console.log('audio:', audio);
+
     if (!audio?.type.startsWith('audio/')) {
       setMessage('❌ Пожалуйста, выберите аудиофайл');
       return;
