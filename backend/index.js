@@ -11,6 +11,10 @@ const PORT = process.env.PORT || 3001;
 const trackRoutes = require('./routes/tracks');
 const userRoutes = require('./routes/users');
 
+app.use(express.json({ limit: '50mb' }));
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
 // Middlewares
 app.use(cors());
 app.use(express.json());
