@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 import TinderCard from 'react-tinder-card';
 import { useOutletContext } from "react-router-dom";
 import { getRandomTrack, likeTrack, donateTrack, getUser, dislikeTrack } from '../api';
-import { useOutletContext } from "react-router-dom";
 
 import TrackPlayer from "./TrackPlayer";
 import axios from 'axios';
@@ -21,7 +20,6 @@ export default function RandomPlayer() {
   const cardRef = useRef();
   const [noTracks, setNoTracks] = useState(false);
   const location = useLocation();
-  const { telegramId } = useOutletContext();
 
   // Получить свои VibeCoins
   const fetchMyCoins = async () => {
