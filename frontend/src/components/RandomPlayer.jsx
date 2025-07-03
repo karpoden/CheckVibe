@@ -11,7 +11,7 @@ import { Home, Plus, User, Star } from 'lucide-react';
 // const TELEGRAM_ID = '123456'; // временный ID
 // const tg = window.Telegram.WebApp;
 // const TELEGRAM_ID = tg.initDataUnsafe.user?.id;
-const { telegramId } = useOutletContext();
+
 
 export default function RandomPlayer() {
   const [track, setTrack] = useState(null);
@@ -20,6 +20,7 @@ export default function RandomPlayer() {
   const cardRef = useRef();
   const [noTracks, setNoTracks] = useState(false);
   const location = useLocation();
+  const { telegramId } = useOutletContext();
 
   // Получить свои VibeCoins
   const fetchMyCoins = async () => {
