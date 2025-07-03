@@ -16,6 +16,9 @@ const upload = multer({ storage });
 
 // Загрузка трека
 router.post('/upload', upload.single('audio'), async (req, res) => {
+  console.log('UPLOAD ATTEMPT BODY:', req.body);
+  console.log('UPLOAD ATTEMPT FILE:', req.file);
+
   try {
     const { title, telegramId } = req.body;
     const file = req.file;
