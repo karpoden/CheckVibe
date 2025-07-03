@@ -20,6 +20,8 @@ export default defineConfig({
     allowedHosts: [
       'localhost',
       '127.0.0.1',
+      'checkvibe.ru',
+      'www.checkvibe.ru',
     ],
   },
 });

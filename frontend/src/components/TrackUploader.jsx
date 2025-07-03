@@ -21,16 +21,21 @@ export default function TrackUploader() {
   const handleUpload = async (e) => {
     e.preventDefault();
 
+    if (!audio?.type.startsWith('audio/')) {
+      setMessage('❌ Пожалуйста, выберите аудиофайл');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('title', title);
-    // formData.append('telegramId', telegramId);
+    formData.append('telegramId', telegramId);
     formData.append('audio', audio);
 
     try {
       await uploadTrack(formData);
       setMessage('✅ Трек загружен');
       setTitle('');
-      setTelegramId(telegramId);
+      // setTelegramId(telegramId);
       setAudio(null);
     } catch (err) {
       setMessage('❌ Ошибка при загрузке');
@@ -85,7 +90,7 @@ export default function TrackUploader() {
       /> */}
       <input
         type="file"
-        accept="audio/*"
+        accept=".mp3, .wav, .ogg, .m4a, audio/*"
         onChange={(e) => setAudio(e.target.files[0])}
         required
         style={inputStyle}
