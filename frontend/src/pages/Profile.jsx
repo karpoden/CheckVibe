@@ -8,9 +8,10 @@ import { useOutletContext } from "react-router-dom";
 // const tg = window.Telegram.WebApp;
 // const TELEGRAM_ID = tg.initDataUnsafe.user?.id;
 //const TELEGRAM_ID = "123456"; // временный ID
-const { telegramId } = useOutletContext();
+
 
 export default function Profile() {
+  const { telegramId } = useOutletContext();
   const [myCoins, setMyCoins] = useState(0);
   const [tracks, setTracks] = useState([]);
   const [loading, setLoading] = useState(true);
