@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import TinderCard from 'react-tinder-card';
 import { useOutletContext } from "react-router-dom";
 import { getRandomTrack, likeTrack, donateTrack, getUser, dislikeTrack } from '../api';
+import { useOutletContext } from "react-router-dom";
 
 import TrackPlayer from "./TrackPlayer";
 import axios from 'axios';
@@ -9,8 +10,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, Plus, User, Star } from 'lucide-react';
 
 // const TELEGRAM_ID = '123456'; // временный ID
-const tg = window.Telegram.WebApp;
-const TELEGRAM_ID = tg.initDataUnsafe.user?.id;
+// const tg = window.Telegram.WebApp;
+// const TELEGRAM_ID = tg.initDataUnsafe.user?.id;
+const { telegramId } = useOutletContext();
 
 export default function RandomPlayer() {
   const [track, setTrack] = useState(null);
@@ -209,6 +211,17 @@ export default function RandomPlayer() {
           Обнулить оценки и начать заново
         </button>
       </div>
+      <div style={{ display: "flex", gap: 24, marginTop: 36, justifyContent: "center" }}>
+      <Link to="/" style={navBtnStyle(location.pathname === "/")}>
+        <Home size={28} />
+      </Link>
+      <Link to="/add" style={navBtnStyle(location.pathname === "/add")}>
+        <Plus size={28} />
+      </Link>
+      <Link to="/profile" style={navBtnStyle(location.pathname === "/profile")}>
+        <User size={28} />
+      </Link>
+    </div>
     </div>
   );
 

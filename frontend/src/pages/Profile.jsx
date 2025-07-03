@@ -3,10 +3,12 @@ import { getUser, getTracksByUser, deleteTrack, promoteTrack } from "../api";
 import { Star, Trash2, TrendingUp, Home, Plus, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import TrackPlayer from "../components/TrackPlayer";
+import { useOutletContext } from "react-router-dom";
 
-const tg = window.Telegram.WebApp;
-const TELEGRAM_ID = tg.initDataUnsafe.user?.id;
+// const tg = window.Telegram.WebApp;
+// const TELEGRAM_ID = tg.initDataUnsafe.user?.id;
 //const TELEGRAM_ID = "123456"; // временный ID
+const { telegramId } = useOutletContext();
 
 export default function Profile() {
   const [myCoins, setMyCoins] = useState(0);
@@ -158,7 +160,7 @@ export default function Profile() {
                   {track.title}
                 </div>
                 <TrackPlayer
-                  trackUrl={track.fileUrl} // URL трека src={track.fileUrl}
+                  src={track.fileUrl} // URL трека src={track.fileUrl}
                   avatarUrl={"/vite.svg"} // или свойство с аватаркой автора, если есть
                 />
                 <div style={{ display: "flex", gap: 16, alignItems: "center", fontSize: "0.97em", marginBottom: 6 }}>
