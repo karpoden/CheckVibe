@@ -25,7 +25,7 @@ export default function RandomPlayer() {
   // Получить свои VibeCoins
   const fetchMyCoins = async () => {
     try {
-      const res = await getUser(TELEGRAM_ID);
+      const res = await getUser(telegramId);
       setMyCoins(res.data.vibeCoins || 0);
     } catch {
       setMyCoins(0);
@@ -35,7 +35,7 @@ export default function RandomPlayer() {
   const fetchTrack = async () => {
     try {
       setIsLoading(true);
-      const res = await getRandomTrack(TELEGRAM_ID);
+      const res = await getRandomTrack(telegramId);
       setTrack(res.data);
       setNoTracks(false);
     } catch (err) {
@@ -60,7 +60,7 @@ export default function RandomPlayer() {
   const handleLike = async () => {
     if (!track) return;
     try {
-      await likeTrack(track.id, TELEGRAM_ID);
+      await likeTrack(track.id, telegramId);
       await fetchMyCoins();
     } catch (err) {}
     await fetchTrack();
@@ -92,7 +92,7 @@ export default function RandomPlayer() {
   const handleDislike = async () => {
     if (!track) return;
     try {
-      await dislikeTrack(track.id, TELEGRAM_ID);
+      await dislikeTrack(track.id, telegramId);
       await fetchMyCoins();
     } catch (err) {}
     await fetchTrack();
@@ -109,7 +109,7 @@ export default function RandomPlayer() {
   };
 
   const handleResetRatings = async () => {
-    await axios.post('/api/tracks/reset-ratings', { telegramId: TELEGRAM_ID });
+    await axios.post('/api/tracks/reset-ratings', { telegramId: telegramId });
     fetchTrack();
   };
 
@@ -117,8 +117,8 @@ export default function RandomPlayer() {
   const handleDonate = async () => {
     if (!track || myCoins < 5) return;
     try {
-      await likeTrack(track.id, TELEGRAM_ID);
-      await donateTrack(track.id, TELEGRAM_ID);
+      await likeTrack(track.id, telegramId);
+      await donateTrack(track.id, telegramId);
       await fetchMyCoins();
       await fetchTrack();
     } catch (err) {}

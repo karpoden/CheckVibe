@@ -23,9 +23,9 @@ export default function Profile() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const userRes = await getUser(TELEGRAM_ID);
+      const userRes = await getUser(telegramId);
       setMyCoins(userRes.data.vibeCoins || 0);
-      const tracksRes = await getTracksByUser(TELEGRAM_ID);
+      const tracksRes = await getTracksByUser(telegramId);
       setTracks(tracksRes.data || []);
     } catch {
       setMyCoins(0);
@@ -59,7 +59,7 @@ export default function Profile() {
       return;
     }
     try {
-      await promoteTrack(id, TELEGRAM_ID, amount);
+      await promoteTrack(id, telegramId, amount);
       setActionMsg(`Трек продвинут на ${amount} VibeCoin!`);
       fetchData();
     } catch {
