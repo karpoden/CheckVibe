@@ -7,6 +7,11 @@ services:
     ports:
       - "3001:3001"
     container_name: checkvibe-backend
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/prisma/dev.db:/app/prisma/dev.db
+    networks:
+      - checkvibe
 
   frontend:
     build:
@@ -16,9 +21,17 @@ services:
     depends_on:
       - backend
     container_name: checkvibe-frontend
+    networks:
+      - checkvibe
 
   bot:
     build:
       context: .
       dockerfile: bot/Dockerfile
     restart: always
+    networks:
+      - checkvibe
+
+networks:
+  checkvibe:
+    driver: bridge
