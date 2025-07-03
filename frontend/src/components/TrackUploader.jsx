@@ -38,7 +38,7 @@ export default function TrackUploader() {
       // setTelegramId(telegramId);
       setAudio(null);
     } catch (err) {
-      setMessage('❌ Ошибка при загрузке');
+      setMessage('❌ Ошибка при загрузке telegramId', telegramId);
     }
   };
 
