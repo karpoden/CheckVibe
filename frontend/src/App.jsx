@@ -4,9 +4,14 @@ import WelcomeModal from "./components/WelcomeModal";
 
 export default function App() {
   const [showWelcome, setShowWelcome] = useState(false);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     // Показывать только при первом входе (можно использовать localStorage)
+    if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+      setUserId(window.Telegram.WebApp.initDataUnsafe.user.id);
+    }
+    
     if (!localStorage.getItem("agreedToTerms")) {
       setShowWelcome(true);
     }
