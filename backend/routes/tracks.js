@@ -9,7 +9,8 @@ const prisma = new PrismaClient();
 const storage = multer.diskStorage({
   destination: 'uploads/',
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    const asciiName = file.originalname.replace(/[^\x00-\x7F]/g, "_");
+    cb(null, `${Date.now()}-${asciiName}`);
   }
 });
 const upload = multer({ storage });
