@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import TinderCard from 'react-tinder-card';
+import { useOutletContext } from "react-router-dom";
 import { getRandomTrack, likeTrack, donateTrack, getUser, dislikeTrack } from '../api';
 
 import TrackPlayer from "./TrackPlayer";
@@ -15,10 +16,10 @@ export default function RandomPlayer() {
   const [track, setTrack] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [myCoins, setMyCoins] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
   const cardRef = useRef();
   const [noTracks, setNoTracks] = useState(false);
   const location = useLocation();
+  const { telegramId } = useOutletContext();
 
   // Получить свои VibeCoins
   const fetchMyCoins = async () => {
@@ -207,6 +208,40 @@ export default function RandomPlayer() {
         >
           Обнулить оценки и начать заново
         </button>
+      </div>
+    </div>
+  );
+
+  if (isLoading) return (
+    <div style={{ color: "#fff", marginTop: 40 }}>
+      Загрузка трека...
+      <div style={{ display: "flex", gap: 24, marginTop: 36, justifyContent: "center" }}>
+        <Link to="/" style={navBtnStyle(location.pathname === "/")}>
+          <Home size={28} />
+        </Link>
+        <Link to="/add" style={navBtnStyle(location.pathname === "/add")}>
+          <Plus size={28} />
+        </Link>
+        <Link to="/profile" style={navBtnStyle(location.pathname === "/profile")}>
+          <User size={28} />
+        </Link>
+      </div>
+    </div>
+  );
+
+  if (!track) return (
+    <div style={{ color: "#fff", marginTop: 40 }}>
+      Нет доступных треков
+      <div style={{ display: "flex", gap: 24, marginTop: 36, justifyContent: "center" }}>
+        <Link to="/" style={navBtnStyle(location.pathname === "/")}>
+          <Home size={28} />
+        </Link>
+        <Link to="/add" style={navBtnStyle(location.pathname === "/add")}>
+          <Plus size={28} />
+        </Link>
+        <Link to="/profile" style={navBtnStyle(location.pathname === "/profile")}>
+          <User size={28} />
+        </Link>
       </div>
     </div>
   );

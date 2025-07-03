@@ -13,7 +13,7 @@ async def cmd_start(message: types.Message):
     # Кнопка с web_app, передаём user_id в init_data (в json или как параметр)
     keyboard.add(types.KeyboardButton(
         text="Открыть Mini App",
-        web_app=types.WebAppInfo(url=f"https://checkvibe.ru/profile?user_id={user_id}")
+        web_app=types.WebAppInfo(url=f"https://checkvibe.ru?user_id={user_id}")
     ))
     
     await message.answer("Привет! Нажми на кнопку, чтобы открыть мини-приложение.", reply_markup=keyboard)

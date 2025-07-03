@@ -1,28 +1,34 @@
-// import { useState } from 'react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+// import { useState, useEffect } from 'react';
 import { uploadTrack } from '../api';
+import { useOutletContext } from "react-router-dom";
 
 export default function TrackUploader() {
+  const { telegramId } = useOutletContext();
   const [title, setTitle] = useState('');
-  const [telegramId, setTelegramId] = useState('');
+  // const [telegramId, setTelegramId] = useState('');
   const [audio, setAudio] = useState(null);
   const [message, setMessage] = useState('');
 
 
-  useEffect(() => {
-    const tg = window.Telegram?.WebApp;
-    const id = tg?.initDataUnsafe?.user?.id;
+  // useEffect(() => {
+  //   const tg = window.Telegram?.WebApp;
+  //   const id = tg?.initDataUnsafe?.user?.id;
 
-    if (id) {
-      setTelegramId(String(id));
-    }
-  }, []);
+  //   if (id) {
+  //     setTelegramId(String(id));
+  //   }
+  // }, []);
 
   const handleUpload = async (e) => {
     e.preventDefault();
 
     if (!audio?.type.startsWith('audio/')) {
       setMessage('❌ Пожалуйста, выберите аудиофайл');
+      return;
+    }
+    if (!telegramId) {
+      setMessage('❌ Не удалось определить Telegram ID');
       return;
     }
 
@@ -38,7 +44,7 @@ export default function TrackUploader() {
       // setTelegramId(telegramId);
       setAudio(null);
     } catch (err) {
-      setMessage('❌ Ошибка при загрузке telegramId', telegramId);
+      setMessage('❌ Ошибка при загрузке');
     }
   };
 
