@@ -21,6 +21,7 @@ export default function RandomPlayer() {
   const controlsDonate = useAnimation();
   const controlsResetRating = useAnimation();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [swipeDirection, setSwipeDirection] = useState(null);
 
   // Получить свои VibeCoins
   const fetchMyCoins = async () => {
@@ -38,6 +39,7 @@ export default function RandomPlayer() {
       const res = await getRandomTrack(telegramId);
       setTrack(res.data);
       setNoTracks(false);
+      setSwipeDirection(null); // Сброс направления свайпа
     } catch (err) {
       if (
         err.response &&
@@ -56,6 +58,12 @@ export default function RandomPlayer() {
     }
   };
 
+  // Анимация свайпа
+  const swipeAnimation = async (direction) => {
+    setSwipeDirection(direction);
+    await new Promise(resolve => setTimeout(resolve, 500)); // Ждем завершения анимации
+  };
+
   // Лайк
   const handleLike = async () => {
     if (!track) return;
@@ -69,6 +77,7 @@ export default function RandomPlayer() {
       ],
       transition: { duration: 0.6, ease: "easeInOut"},
     });
+    await swipeAnimation('right');
     try {
       await likeTrack(track.id, telegramId);
       await fetchMyCoins();
@@ -89,6 +98,7 @@ export default function RandomPlayer() {
       ],
       transition: { duration: 0.6, ease: "easeInOut"},
     });
+    await swipeAnimation('left');
     try {
       await dislikeTrack(track.id, telegramId);
       await fetchMyCoins();
@@ -134,6 +144,7 @@ export default function RandomPlayer() {
       ],
       transition: { duration: 0.6, ease: "easeInOut"},
     });
+    await swipeAnimation('right');
     try {
       await likeTrack(track.id, telegramId);
       await donateTrack(track.id, telegramId);
@@ -183,6 +194,26 @@ export default function RandomPlayer() {
       y: -20,
       transition: { duration: 0.3, ease: "easeIn" }
     }
+  };
+
+  const cardVariants = {
+    hidden: (direction) => ({
+      x: direction === 'right' ? 200 : direction === 'left' ? -200 : 0,
+      opacity: 0,
+      rotate: direction === 'right' ? 30 : direction === 'left' ? -30 : 0,
+    }),
+    visible: {
+      x: 0,
+      opacity: 1,
+      rotate: 0,
+      transition: { duration: 0.5 }
+    },
+    exit: (direction) => ({
+      x: direction === 'right' ? 200 : direction === 'left' ? -200 : 0,
+      opacity: 0,
+      rotate: direction === 'right' ? 30 : direction === 'left' ? -30 : 0,
+      transition: { duration: 0.5 }
+    })
   };
 
   const loadingVariants = {
@@ -286,7 +317,12 @@ export default function RandomPlayer() {
               preventSwipe={['up', 'down']}
               ref={cardRef}
             >
-              <div
+              <motion.div
+                custom={swipeDirection}
+                variants={cardVariants}
+                initial="visible"
+                animate="visible"
+                exit="exit"
                 style={{
                   background: "rgba(30,32,40,0.95)",
                   padding: 28,
@@ -356,7 +392,7 @@ export default function RandomPlayer() {
                 <p style={{ fontSize: "0.8em", color: "#b3b3b3", zIndex: 2, position: "relative" }}>
                   Свайпайте → или используйте кнопки ниже
                 </p>
-              </div>
+              </motion.div>
             </TinderCard>
             <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
               <motion.button
