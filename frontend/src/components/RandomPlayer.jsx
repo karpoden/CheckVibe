@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import TinderCard from 'react-tinder-card';
 import { useOutletContext } from "react-router-dom";
 import { getRandomTrack, likeTrack, donateTrack, getUser, dislikeTrack } from '../api';
-
+import { motion, useAnimation } from "framer-motion";
 import TrackPlayer from "./TrackPlayer";
 import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';
@@ -22,6 +22,7 @@ export default function RandomPlayer() {
   const [noTracks, setNoTracks] = useState(false);
   const location = useLocation();
   const { telegramId } = useOutletContext();
+  const controls = useAnimation();
 
   // Получить свои VibeCoins
   const fetchMyCoins = async () => {
@@ -60,6 +61,10 @@ export default function RandomPlayer() {
   // Лайк
   const handleLike = async () => {
     if (!track) return;
+    controls.start({
+      scale: [1, 1.3, 1],
+      transition: { duration: 0.4},
+    });
     try {
       await likeTrack(track.id, telegramId);
       await fetchMyCoins();
@@ -335,7 +340,8 @@ export default function RandomPlayer() {
         >
           👎
         </button>
-        <button
+        <motion.button
+          animate={controls}
           onClick={handleLike}
           style={{
             background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
@@ -351,7 +357,7 @@ export default function RandomPlayer() {
           }}
         >
           👍
-        </button>
+        </motion.button>
       </div>
             {/* Навигация под лайком/дизлайком */}
     </div>
