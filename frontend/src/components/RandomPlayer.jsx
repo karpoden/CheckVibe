@@ -22,7 +22,9 @@ export default function RandomPlayer() {
   const [noTracks, setNoTracks] = useState(false);
   const location = useLocation();
   const { telegramId } = useOutletContext();
-  const controls = useAnimation();
+  const controlsLike = useAnimation();
+  const controlsDislike = useAnimation();
+  const controlsDonate = useAnimation();
 
   // Получить свои VibeCoins
   const fetchMyCoins = async () => {
@@ -61,7 +63,7 @@ export default function RandomPlayer() {
   // Лайк
   const handleLike = async () => {
     if (!track) return;
-    controls.start({
+    controlsLike.start({
       scale: [1, 1.4, 0.95, 1],
       boxShadow: [
         "0 0 12px #6a82fb88",
@@ -103,7 +105,7 @@ export default function RandomPlayer() {
   // Дизлайк
   const handleDislike = async () => {
     if (!track) return;
-    controls.start({
+    controlsDislike.start({
       scale: [1, 1.4, 0.95, 1],
       boxShadow: [
         "0 0 12px #6a82fb88",
@@ -138,7 +140,7 @@ export default function RandomPlayer() {
   // Донат автору трека + лайк (но баланс пользователя НЕ увеличивается дополнительно)
   const handleDonate = async () => {
     if (!track || myCoins < 5) return;
-    controls.start({
+    controlsDonate.start({
       scale: [1, 1.4, 0.95, 1],
       boxShadow: [
         "0 0 12px #6a82fb88",
@@ -314,7 +316,7 @@ export default function RandomPlayer() {
           }}>
             <span>💰 {myCoins}</span>
             <motion.button
-              animate={controls}
+              animate={controlsDonate}
               whileHover={{ scale: 1.1 }}
               onClick={handleDonate}
               title="Донат автору 5 VibeCoins и лайк"
@@ -352,7 +354,7 @@ export default function RandomPlayer() {
       </TinderCard>
       <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
         <motion.button
-          animate={controls}
+          animate={controlsDonate}
           whileHover={{ scale: 1.1 }}
           onClick={handleDislike}
           style={{
@@ -371,7 +373,7 @@ export default function RandomPlayer() {
           👎
         </motion.button>
         <motion.button
-          animate={controls}
+          animate={controlsLike}
           whileHover={{ scale: 1.1 }}
           onClick={handleLike}
           style={{
