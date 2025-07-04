@@ -62,8 +62,14 @@ export default function RandomPlayer() {
   const handleLike = async () => {
     if (!track) return;
     controls.start({
-      scale: [1, 1.3, 1],
-      transition: { duration: 0.4},
+      scale: [1, 1.4, 0.95, 1],
+      boxShadow: [
+        "0 0 12px #6a82fb88",
+        "0 0 32px #fc5c7dcc",
+        "0 0 16px #6a82fb88",
+        "0 0 12px #6a82fb88"
+      ],
+      transition: { duration: 0.6, ease: "easeInOut"},
     });
     try {
       await likeTrack(track.id, telegramId);
@@ -342,6 +348,7 @@ export default function RandomPlayer() {
         </button>
         <motion.button
           animate={controls}
+          whileHover={{ scale: 1.1 }}
           onClick={handleLike}
           style={{
             background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
