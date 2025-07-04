@@ -35,6 +35,7 @@ export default function Profile() {
   };
 
   useEffect(() => {
+    if (!telegramId) return <div style={{color:"#fff"}}>Загрузка...</div>;
     fetchData();
     // eslint-disable-next-line
   }, []);

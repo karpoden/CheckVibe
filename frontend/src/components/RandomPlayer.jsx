@@ -125,6 +125,7 @@ export default function RandomPlayer() {
   };
 
   useEffect(() => {
+    if (!telegramId) return <div style={{color:"#fff"}}>Загрузка...</div>;
     fetchTrack();
     fetchMyCoins();
     // eslint-disable-next-line
