@@ -194,11 +194,21 @@ router.delete('/:id', async (req, res) => {
     const track = await prisma.audio.findUnique({ where: { id: req.params.id } });
     if (!track) return res.status(404).json({ error: 'Трек не найден' });
 
-    // Удалить файл с диска (опционально)
-    const filePath = path.join(__dirname, '..', track.fileUrl);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    // 1. Удалить все оценки этого трека
+    await prisma.trackRating.deleteMany({ where: { audioId: track.id } });
 
+    // 2. Удалить файл с диска (опционально)
+    const filePath = path.join(__dirname, '..', track.fileUrl);
+    try {
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    } catch (e) {
+      console.warn('Не удалось удалить файл:', filePath, e.message);
+      // Не прерываем удаление из базы!
+    }
+
+    // 3. Удалить сам трек
     await prisma.audio.delete({ where: { id: req.params.id } });
+
     res.json({ success: true });
   } catch (err) {
     console.error('Ошибка при удалении трека:', err);
