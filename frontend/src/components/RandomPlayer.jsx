@@ -125,11 +125,11 @@ export default function RandomPlayer() {
   };
 
   useEffect(() => {
-    if (!telegramId) return <div style={{color:"#fff"}}>Загрузка...</div>;
+    if (!telegramId) return;
     fetchTrack();
     fetchMyCoins();
     // eslint-disable-next-line
-  }, []);
+  }, [telegramId]);
 
   // Стили для звездочки (доната)
   const starBtnStyle = (disabled) => ({
@@ -259,6 +259,9 @@ export default function RandomPlayer() {
     </div>
   );
 
+  if (!telegramId) {
+    return <div style={{ color: "#fff" }}>Загрузка...</div>;
+  }
   if (isLoading) return <div style={{ color: "#fff", marginTop: 40 }}>Загрузка трека...</div>;
   if (!track) return <div style={{ color: "#fff", marginTop: 40 }}>Нет доступных треков</div>;
 

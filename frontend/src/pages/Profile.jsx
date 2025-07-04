@@ -35,10 +35,10 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    if (!telegramId) return <div style={{color:"#fff"}}>Загрузка...</div>;
+    if (!telegramId) return;
     fetchData();
     // eslint-disable-next-line
-  }, []);
+  }, [telegramId]);
 
   // Удалить трек
   const handleDelete = async (id) => {
@@ -101,7 +101,10 @@ export default function Profile() {
     alignItems: "center",
     justifyContent: "center",
   });
-
+  
+  if (!telegramId) {
+    return <div style={{ color: "#fff" }}>Загрузка...</div>;
+  }
   return (
     <div style={{ maxWidth: 420, margin: "0 auto", padding: 24 }}>
       <h2 style={{
