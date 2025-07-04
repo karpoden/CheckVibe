@@ -354,7 +354,7 @@ export default function RandomPlayer() {
       </TinderCard>
       <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
         <motion.button
-          animate={controlsDonate}
+          animate={controlsDislike}
           whileHover={{ scale: 1.1 }}
           onClick={handleDislike}
           style={{
