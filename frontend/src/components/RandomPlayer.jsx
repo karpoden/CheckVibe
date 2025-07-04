@@ -22,6 +22,7 @@ export default function RandomPlayer() {
   const controlsResetRating = useAnimation();
   const [isPlaying, setIsPlaying] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState(null);
+  const [isSwiping, setIsSwiping] = useState(false);
 
   // Получить свои VibeCoins
   const fetchMyCoins = async () => {
@@ -39,14 +40,9 @@ export default function RandomPlayer() {
       const res = await getRandomTrack(telegramId);
       setTrack(res.data);
       setNoTracks(false);
-      setSwipeDirection(null); // Сброс направления свайпа
+      setSwipeDirection(null);
     } catch (err) {
-      if (
-        err.response &&
-        err.response.status === 404 &&
-        err.response.data &&
-        err.response.data.canReset
-      ) {
+      if (err.response?.status === 404 && err.response.data?.canReset) {
         setNoTracks(true);
         setTrack(null);
       } else {
@@ -60,104 +56,83 @@ export default function RandomPlayer() {
 
   // Анимация свайпа
   const swipeAnimation = async (direction) => {
+    setIsSwiping(true);
     setSwipeDirection(direction);
-    await new Promise(resolve => setTimeout(resolve, 500)); // Ждем завершения анимации
+    await new Promise(resolve => setTimeout(resolve, 300)); // Уменьшил время анимации
+    setIsSwiping(false);
+  };
+
+  // Общий обработчик оценки
+  const handleRate = async (direction, apiCall) => {
+    if (!track || isSwiping) return;
+    
+    // Анимация кнопки
+    const controls = direction === 'right' ? controlsLike : controlsDislike;
+    await controls.start({
+      scale: [1, 1.3, 1],
+      transition: { duration: 0.3 }
+    });
+    
+    // Анимация карточки
+    await swipeAnimation(direction);
+    
+    try {
+      await apiCall(track.id, telegramId);
+      await fetchMyCoins();
+    } catch (err) {
+      console.error(err);
+    }
+    
+    await fetchTrack();
   };
 
   // Лайк
-  const handleLike = async () => {
-    if (!track) return;
-    await controlsLike.start({
-      scale: [1, 1.4, 0.95, 1],
-      boxShadow: [
-        "0 0 12px #6a82fb88",
-        "0 0 32px #fc5c7dcc",
-        "0 0 16px #6a82fb88",
-        "0 0 12px #6a82fb88"
-      ],
-      transition: { duration: 0.6, ease: "easeInOut"},
-    });
-    await swipeAnimation('right');
-    try {
-      await likeTrack(track.id, telegramId);
-      await fetchMyCoins();
-    } catch (err) {}
-    await fetchTrack();
-  };
+  const handleLike = () => handleRate('right', likeTrack);
 
   // Дизлайк
-  const handleDislike = async () => {
-    if (!track) return;
-    await controlsDislike.start({
-      scale: [1, 1.4, 0.95, 1],
-      boxShadow: [
-        "0 0 12px #6a82fb88",
-        "0 0 32px #fc5c7dcc",
-        "0 0 16px #6a82fb88",
-        "0 0 12px #6a82fb88"
-      ],
-      transition: { duration: 0.6, ease: "easeInOut"},
-    });
-    await swipeAnimation('left');
-    try {
-      await dislikeTrack(track.id, telegramId);
-      await fetchMyCoins();
-    } catch (err) {}
-    await fetchTrack();
-  };
+  const handleDislike = () => handleRate('left', dislikeTrack);
 
   // Свайп
   const handleSwipe = async (direction) => {
-    if (!track) return;
-    if (direction === 'right') {
-      await handleLike();
-    } else if (direction === 'left') {
-      await handleDislike();
-    }
+    if (direction === 'right') await handleLike();
+    else if (direction === 'left') await handleDislike();
   };
 
   const handleResetRatings = async () => {
     await controlsResetRating.start({
-      scale: [1, 1.4, 0.95, 1],
-      boxShadow: [
-        "0 0 12px #6a82fb88",
-        "0 0 32px #fc5c7dcc",
-        "0 0 16px #6a82fb88",
-        "0 0 12px #6a82fb88"
-      ],
-      transition: { duration: 0.6, ease: "easeInOut"},
+      scale: [1, 1.2, 1],
+      transition: { duration: 0.3 }
     });
-    await axios.post('/api/tracks/reset-ratings', { telegramId: telegramId });
+    await axios.post('/api/tracks/reset-ratings', { telegramId });
     fetchTrack();
   };
 
-  // Донат автору трека
+  // Донат
   const handleDonate = async () => {
-    if (!track || myCoins < 5) return;
+    if (!track || myCoins < 5 || isSwiping) return;
+    
     await controlsDonate.start({
-      scale: [1, 1.4, 0.95, 1],
-      boxShadow: [
-        "0 0 12px #6a82fb88",
-        "0 0 32px #fc5c7dcc",
-        "0 0 16px #6a82fb88",
-        "0 0 12px #6a82fb88"
-      ],
-      transition: { duration: 0.6, ease: "easeInOut"},
+      scale: [1, 1.3, 1],
+      transition: { duration: 0.3 }
     });
+    
     await swipeAnimation('right');
+    
     try {
       await likeTrack(track.id, telegramId);
       await donateTrack(track.id, telegramId);
       await fetchMyCoins();
       await fetchTrack();
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
-    if (!telegramId) return;
-    fetchTrack();
-    fetchMyCoins();
-    // eslint-disable-next-line
+    if (telegramId) {
+      fetchTrack();
+      fetchMyCoins();
+    }
   }, [telegramId]);
 
   // Стили для звездочки (доната)
@@ -181,24 +156,24 @@ export default function RandomPlayer() {
     pointerEvents: disabled ? "none" : "auto",
   });
 
-  // Анимации для переходов между состояниями
+  // Анимации
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
       opacity: 1, 
       y: 0,
-      transition: { duration: 0.4, ease: "easeOut" }
+      transition: { duration: 0.3 }
     },
     exit: { 
       opacity: 0, 
       y: -20,
-      transition: { duration: 0.3, ease: "easeIn" }
+      transition: { duration: 0.2 }
     }
   };
 
   const cardVariants = {
     hidden: (direction) => ({
-      x: direction === 'right' ? 200 : direction === 'left' ? -200 : 0,
+      x: direction === 'right' ? 300 : direction === 'left' ? -300 : 0,
       opacity: 0,
       rotate: direction === 'right' ? 30 : direction === 'left' ? -30 : 0,
     }),
@@ -206,20 +181,14 @@ export default function RandomPlayer() {
       x: 0,
       opacity: 1,
       rotate: 0,
-      transition: { duration: 0.5 }
+      transition: { duration: 0.3 }
     },
     exit: (direction) => ({
-      x: direction === 'right' ? 200 : direction === 'left' ? -200 : 0,
+      x: direction === 'right' ? 300 : direction === 'left' ? -300 : 0,
       opacity: 0,
       rotate: direction === 'right' ? 30 : direction === 'left' ? -30 : 0,
-      transition: { duration: 0.5 }
+      transition: { duration: 0.3 }
     })
-  };
-
-  const loadingVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-    exit: { opacity: 0 }
   };
 
   return (
@@ -228,10 +197,9 @@ export default function RandomPlayer() {
         {isLoading ? (
           <motion.div
             key="loading"
-            variants={loadingVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             style={{ color: "#fff", marginTop: 40 }}
           >
             Загрузка трека...
@@ -251,19 +219,17 @@ export default function RandomPlayer() {
               justifyContent: "center",
             }}
           >
-            <div
-              style={{
-                background: "rgba(30,32,40,0.97)",
-                borderRadius: 22,
-                boxShadow: "0 4px 32px 0 rgba(106,130,251,0.25), 0 1.5px 8px 0 #fc5c7d44",
-                border: "1.5px solid #6a82fb33",
-                padding: "38px 32px 32px 32px",
-                color: "#fff",
-                textAlign: "center",
-                maxWidth: 340,
-                margin: "0 auto"
-              }}
-            >
+            <div style={{
+              background: "rgba(30,32,40,0.97)",
+              borderRadius: 22,
+              boxShadow: "0 4px 32px 0 rgba(106,130,251,0.25), 0 1.5px 8px 0 #fc5c7d44",
+              border: "1.5px solid #6a82fb33",
+              padding: "38px 32px 32px 32px",
+              color: "#fff",
+              textAlign: "center",
+              maxWidth: 340,
+              margin: "0 auto"
+            }}>
               <h2 style={{
                 fontSize: "1.3em",
                 fontWeight: 700,
@@ -280,7 +246,7 @@ export default function RandomPlayer() {
               </p>
               <motion.button
                 animate={controlsResetRating}
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.05 }}
                 onClick={handleResetRatings}
                 style={{
                   background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
@@ -294,8 +260,6 @@ export default function RandomPlayer() {
                   cursor: "pointer",
                   width: "100%",
                   marginTop: 8,
-                  transition: "box-shadow 0.2s",
-                  textShadow: "0 2px 8px #6a82fb55"
                 }}
               >
                 Обнулить оценки и начать заново
@@ -316,6 +280,7 @@ export default function RandomPlayer() {
               onSwipe={handleSwipe}
               preventSwipe={['up', 'down']}
               ref={cardRef}
+              swipeThreshold={100} // Уменьшил порог свайпа для более быстрого срабатывания
             >
               <motion.div
                 custom={swipeDirection}
@@ -368,19 +333,17 @@ export default function RandomPlayer() {
                     <Star size={20} fill="#fff700" color="#fff700" />
                   </motion.button>
                 </div>
-                <h2
-                  style={{
-                    fontSize: "1.7em",
-                    fontWeight: 700,
-                    marginBottom: 8,
-                    letterSpacing: "0.01em",
-                    color: "#fff",
-                    textShadow: "0 2px 12px #6a82fb66",
-                    marginTop: 34,
-                    zIndex: 2,
-                    position: "relative"
-                  }}
-                >
+                <h2 style={{
+                  fontSize: "1.7em",
+                  fontWeight: 700,
+                  marginBottom: 8,
+                  letterSpacing: "0.01em",
+                  color: "#fff",
+                  textShadow: "0 2px 12px #6a82fb66",
+                  marginTop: 34,
+                  zIndex: 2,
+                  position: "relative"
+                }}>
                   {track.title}
                 </h2>
                 <TrackPlayer
@@ -397,7 +360,8 @@ export default function RandomPlayer() {
             <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
               <motion.button
                 animate={controlsDislike}
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleDislike}
                 style={{
                   background: "#232526",
@@ -409,14 +373,14 @@ export default function RandomPlayer() {
                   fontWeight: "bold",
                   fontSize: "1.1em",
                   cursor: "pointer",
-                  transition: "box-shadow 0.2s",
                 }}
               >
                 👎
               </motion.button>
               <motion.button
                 animate={controlsLike}
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleLike}
                 style={{
                   background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
@@ -428,7 +392,6 @@ export default function RandomPlayer() {
                   fontWeight: "bold",
                   fontSize: "1.1em",
                   cursor: "pointer",
-                  transition: "box-shadow 0.2s",
                 }}
               >
                 👍
