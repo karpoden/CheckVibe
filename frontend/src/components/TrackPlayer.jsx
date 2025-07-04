@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 
 // SVG эквалайзер-волна вокруг аватарки
-export function AvatarEqualizer({ isPlaying, size = 180 }) {
+export function AvatarEqualizer({ isPlaying, size = 200 }) {
   const [phase, setPhase] = useState(0);
   const center = size / 2;
   const base = size * 0.41;
@@ -23,7 +23,7 @@ export function AvatarEqualizer({ isPlaying, size = 180 }) {
   });
 
   return (
-    <svg width={size} height={size - 20} style={{ display: "block" }}>
+    <svg width={size} height={size} style={{ display: "block" }}>
       <polygon
         points={points.map(p => p.join(",")).join(" ")}
         fill="none"
