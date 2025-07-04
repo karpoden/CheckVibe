@@ -161,8 +161,7 @@ export default function TrackPlayer({ src, avatarUrl }) {
         <img
           src={avatarUrl || "/vite.svg"}
           alt="avatar"
-          onClick={handleAvatarClick}
-          onTouchStart={handleAvatarClick}
+          onPointerDown={handleAvatarClick}
           style={{
             width: 80,
             height: 80,
