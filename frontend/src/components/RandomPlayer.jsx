@@ -2,17 +2,11 @@ import { useEffect, useState, useRef } from 'react';
 import TinderCard from 'react-tinder-card';
 import { useOutletContext } from "react-router-dom";
 import { getRandomTrack, likeTrack, donateTrack, getUser, dislikeTrack } from '../api';
-import { motion, useAnimation } from "framer-motion";
+import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import TrackPlayer from "./TrackPlayer";
 import axios from 'axios';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, Plus, User, Star } from 'lucide-react';
-// import FooterNav from "../components/FooterNav";
-
-// const TELEGRAM_ID = '123456'; // временный ID
-// const tg = window.Telegram.WebApp;
-// const TELEGRAM_ID = tg.initDataUnsafe.user?.id;
-
+import { useLocation } from 'react-router-dom';
+import { Star } from 'lucide-react';
 
 export default function RandomPlayer() {
   const [track, setTrack] = useState(null);
@@ -25,6 +19,8 @@ export default function RandomPlayer() {
   const controlsLike = useAnimation();
   const controlsDislike = useAnimation();
   const controlsDonate = useAnimation();
+  const controlsResetRating = useAnimation();
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // Получить свои VibeCoins
   const fetchMyCoins = async () => {
@@ -50,10 +46,10 @@ export default function RandomPlayer() {
         err.response.data.canReset
       ) {
         setNoTracks(true);
-        setTrack(null); // обязательно сбрасываем track
+        setTrack(null);
       } else {
         setTrack(null);
-        setNoTracks(false); // не показываем кнопку сброса если это не исчерпание треков
+        setNoTracks(false);
       }
     } finally {
       setIsLoading(false);
@@ -63,7 +59,7 @@ export default function RandomPlayer() {
   // Лайк
   const handleLike = async () => {
     if (!track) return;
-    controlsLike.start({
+    await controlsLike.start({
       scale: [1, 1.4, 0.95, 1],
       boxShadow: [
         "0 0 12px #6a82fb88",
@@ -80,32 +76,10 @@ export default function RandomPlayer() {
     await fetchTrack();
   };
 
-  //   const navBtnStyle = (active) => ({
-  //   background: active
-  //     ? "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)"
-  //     : "#232526",
-  //   color: "#fff",
-  //   boxShadow: active
-  //     ? "0 0 12px #6a82fb88"
-  //     : "0 0 8px #fc5c7d44",
-  //   border: active
-  //     ? "none"
-  //     : "1.5px solid #fc5c7d88",
-  //   padding: "10px 18px",
-  //   borderRadius: "8px",
-  //   fontWeight: "bold",
-  //   fontSize: "1.25em",
-  //   cursor: "pointer",
-  //   transition: "box-shadow 0.2s, background 0.2s",
-  //   display: "flex",
-  //   alignItems: "center",
-  //   justifyContent: "center",
-  // });
-
   // Дизлайк
   const handleDislike = async () => {
     if (!track) return;
-    controlsDislike.start({
+    await controlsDislike.start({
       scale: [1, 1.4, 0.95, 1],
       boxShadow: [
         "0 0 12px #6a82fb88",
@@ -122,7 +96,7 @@ export default function RandomPlayer() {
     await fetchTrack();
   };
 
-  // Свайп (по-прежнему только лайк)
+  // Свайп
   const handleSwipe = async (direction) => {
     if (!track) return;
     if (direction === 'right') {
@@ -133,14 +107,24 @@ export default function RandomPlayer() {
   };
 
   const handleResetRatings = async () => {
+    await controlsResetRating.start({
+      scale: [1, 1.4, 0.95, 1],
+      boxShadow: [
+        "0 0 12px #6a82fb88",
+        "0 0 32px #fc5c7dcc",
+        "0 0 16px #6a82fb88",
+        "0 0 12px #6a82fb88"
+      ],
+      transition: { duration: 0.6, ease: "easeInOut"},
+    });
     await axios.post('/api/tracks/reset-ratings', { telegramId: telegramId });
     fetchTrack();
   };
 
-  // Донат автору трека + лайк (но баланс пользователя НЕ увеличивается дополнительно)
+  // Донат автору трека
   const handleDonate = async () => {
     if (!track || myCoins < 5) return;
-    controlsDonate.start({
+    await controlsDonate.start({
       scale: [1, 1.4, 0.95, 1],
       boxShadow: [
         "0 0 12px #6a82fb88",
@@ -186,213 +170,248 @@ export default function RandomPlayer() {
     pointerEvents: disabled ? "none" : "auto",
   });
 
-  // --- Экран "Нет новых треков" ---
-  if (noTracks) return (
-    <div
-      style={{
-        minHeight: "60vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div
-        style={{
-          background: "rgba(30,32,40,0.97)",
-          borderRadius: 22,
-          boxShadow: "0 4px 32px 0 rgba(106,130,251,0.25), 0 1.5px 8px 0 #fc5c7d44",
-          border: "1.5px solid #6a82fb33",
-          padding: "38px 32px 32px 32px",
-          color: "#fff",
-          textAlign: "center",
-          maxWidth: 340,
-          margin: "0 auto"
-        }}
-      >
-        <h2 style={{
-          fontSize: "1.3em",
-          fontWeight: 700,
-          marginBottom: 18,
-          letterSpacing: "0.01em",
-          color: "#fff",
-          textShadow: "0 2px 12px #6a82fb66"
-        }}>
-          Нет новых треков
-        </h2>
-        <p style={{ color: "#b3b3b3", fontSize: "1.05em", marginBottom: 22 }}>
-          Вы оценили все доступные треки.<br />
-          Хотите просмотреть их заново?
-        </p>
-        <button
-          onClick={handleResetRatings}
-          style={{
-            background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
-            color: "#fff",
-            boxShadow: "0 0 16px #6a82fb88",
-            border: "none",
-            padding: "16px 0",
-            borderRadius: "10px",
-            fontWeight: "bold",
-            fontSize: "1.15em",
-            cursor: "pointer",
-            width: "100%",
-            marginTop: 8,
-            transition: "box-shadow 0.2s",
-            textShadow: "0 2px 8px #6a82fb55"
-          }}
-        >
-          Обнулить оценки и начать заново
-        </button>
-      </div>
-  
-    </div>
-  );
+  // Анимации для переходов между состояниями
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.4, ease: "easeOut" }
+    },
+    exit: { 
+      opacity: 0, 
+      y: -20,
+      transition: { duration: 0.3, ease: "easeIn" }
+    }
+  };
 
-  if (isLoading) return (
-    <div style={{ color: "#fff", marginTop: 40 }}>
-      Загрузка трека...
-      {/* <div style={{ display: "flex", gap: 24, marginTop: 36, justifyContent: "center" }}>
-        <FooterNav />
-      </div> */}
-    </div>
-  );
-
-  if (!track) return (
-    <div style={{ color: "#fff", marginTop: 40 }}>
-      Нет доступных треков
-
-    </div>
-  );
-
-  if (!telegramId) {
-    return <div style={{ color: "#fff" }}>Загрузка...</div>;
-  }
-  if (isLoading) return <div style={{ color: "#fff", marginTop: 40 }}>Загрузка трека...</div>;
-  if (!track) return <div style={{ color: "#fff", marginTop: 40 }}>Нет доступных треков</div>;
+  const loadingVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+    exit: { opacity: 0 }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: 90 }}>
-      <TinderCard
-        key={track.id}
-        onSwipe={handleSwipe}
-        preventSwipe={['up', 'down']}
-        ref={cardRef}
-      >
-        <div
-          style={{
-            background: "rgba(30,32,40,0.95)",
-            padding: 28,
-            borderRadius: 32,
-            boxShadow: "0 4px 32px 0 rgba(106,130,251,0.25), 0 1.5px 8px 0 #fc5c7d44",
-            marginBottom: 24,
-            color: "#fff",
-            border: "1.5px solid #6a82fb33",
-            position: "relative",
-            zIndex: 1,
-            width: 400,
-            maxWidth: "98vw",
-            textAlign: "center",
-            backdropFilter: "blur(2px)",
-            overflow: "visible"
-          }}
-        >
-          {/* Баланс пользователя в правом верхнем углу + кнопка доната */}
-          <div style={{
-            position: "absolute",
-            top: 16,
-            right: 16,
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            background: "rgba(36,37,44,0.85)",
-            borderRadius: 8,
-            padding: "4px 10px",
-            fontWeight: 600,
-            fontSize: "1em",
-            color: "#6a82fb",
-            boxShadow: "0 0 8px #6a82fb44",
-            zIndex: 2
-          }}>
-            <span>💰 {myCoins}</span>
-            <motion.button
-              animate={controlsDonate}
-              whileHover={{ scale: 1.1 }}
-              onClick={handleDonate}
-              title="Донат автору 5 VibeCoins и лайк"
-              style={starBtnStyle(myCoins < 5)}
-              disabled={myCoins < 5}
-            >
-              <Star size={20} fill="#fff700" color="#fff700" />
-            </motion.button>
-          </div>
-          <h2
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <motion.div
+            key="loading"
+            variants={loadingVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            style={{ color: "#fff", marginTop: 40 }}
+          >
+            Загрузка трека...
+          </motion.div>
+        ) : noTracks ? (
+          <motion.div
+            key="no-tracks"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             style={{
-              fontSize: "1.7em",
-              fontWeight: 700,
-              marginBottom: 8,
-              letterSpacing: "0.01em",
-              color: "#fff",
-              textShadow: "0 2px 12px #6a82fb66",
-              marginTop: 34,
-              zIndex: 2,
-              position: "relative"
+              minHeight: "60vh",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            {track.title}
-          </h2>
-          <TrackPlayer
-            src={track.fileUrl}
-            avatarUrl={"/vite.svg"}
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-          />
-          <p style={{ fontSize: "0.8em", color: "#b3b3b3", zIndex: 2, position: "relative" }}>
-            Свайпайте → или используйте кнопки ниже
-          </p>
-        </div>
-      </TinderCard>
-      <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
-        <motion.button
-          animate={controlsDislike}
-          whileHover={{ scale: 1.1 }}
-          onClick={handleDislike}
-          style={{
-            background: "#232526",
-            color: "#fff",
-            border: "1.5px solid #fc5c7d88",
-            boxShadow: "0 0 8px #fc5c7d44",
-            padding: "12px 28px",
-            borderRadius: "8px",
-            fontWeight: "bold",
-            fontSize: "1.1em",
-            cursor: "pointer",
-            transition: "box-shadow 0.2s",
-          }}
-        >
-          👎
-        </motion.button>
-        <motion.button
-          animate={controlsLike}
-          whileHover={{ scale: 1.1 }}
-          onClick={handleLike}
-          style={{
-            background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
-            color: "#fff",
-            boxShadow: "0 0 12px #6a82fb88",
-            border: "none",
-            padding: "12px 28px",
-            borderRadius: "8px",
-            fontWeight: "bold",
-            fontSize: "1.1em",
-            cursor: "pointer",
-            transition: "box-shadow 0.2s",
-          }}
-        >
-          👍
-        </motion.button>
-      </div>
-            {/* Навигация под лайком/дизлайком */}
+            <div
+              style={{
+                background: "rgba(30,32,40,0.97)",
+                borderRadius: 22,
+                boxShadow: "0 4px 32px 0 rgba(106,130,251,0.25), 0 1.5px 8px 0 #fc5c7d44",
+                border: "1.5px solid #6a82fb33",
+                padding: "38px 32px 32px 32px",
+                color: "#fff",
+                textAlign: "center",
+                maxWidth: 340,
+                margin: "0 auto"
+              }}
+            >
+              <h2 style={{
+                fontSize: "1.3em",
+                fontWeight: 700,
+                marginBottom: 18,
+                letterSpacing: "0.01em",
+                color: "#fff",
+                textShadow: "0 2px 12px #6a82fb66"
+              }}>
+                Нет новых треков
+              </h2>
+              <p style={{ color: "#b3b3b3", fontSize: "1.05em", marginBottom: 22 }}>
+                Вы оценили все доступные треки.<br />
+                Хотите просмотреть их заново?
+              </p>
+              <motion.button
+                animate={controlsResetRating}
+                whileHover={{ scale: 1.1 }}
+                onClick={handleResetRatings}
+                style={{
+                  background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
+                  color: "#fff",
+                  boxShadow: "0 0 16px #6a82fb88",
+                  border: "none",
+                  padding: "16px 0",
+                  borderRadius: "10px",
+                  fontWeight: "bold",
+                  fontSize: "1.15em",
+                  cursor: "pointer",
+                  width: "100%",
+                  marginTop: 8,
+                  transition: "box-shadow 0.2s",
+                  textShadow: "0 2px 8px #6a82fb55"
+                }}
+              >
+                Обнулить оценки и начать заново
+              </motion.button>
+            </div>
+          </motion.div>
+        ) : track ? (
+          <motion.div
+            key="track"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+          >
+            <TinderCard
+              key={track.id}
+              onSwipe={handleSwipe}
+              preventSwipe={['up', 'down']}
+              ref={cardRef}
+            >
+              <div
+                style={{
+                  background: "rgba(30,32,40,0.95)",
+                  padding: 28,
+                  borderRadius: 32,
+                  boxShadow: "0 4px 32px 0 rgba(106,130,251,0.25), 0 1.5px 8px 0 #fc5c7d44",
+                  marginBottom: 24,
+                  color: "#fff",
+                  border: "1.5px solid #6a82fb33",
+                  position: "relative",
+                  zIndex: 1,
+                  width: 400,
+                  maxWidth: "98vw",
+                  textAlign: "center",
+                  backdropFilter: "blur(2px)",
+                  overflow: "visible"
+                }}
+              >
+                <div style={{
+                  position: "absolute",
+                  top: 16,
+                  right: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "rgba(36,37,44,0.85)",
+                  borderRadius: 8,
+                  padding: "4px 10px",
+                  fontWeight: 600,
+                  fontSize: "1em",
+                  color: "#6a82fb",
+                  boxShadow: "0 0 8px #6a82fb44",
+                  zIndex: 2
+                }}>
+                  <span>💰 {myCoins}</span>
+                  <motion.button
+                    animate={controlsDonate}
+                    whileHover={{ scale: 1.1 }}
+                    onClick={handleDonate}
+                    title="Донат автору 5 VibeCoins и лайк"
+                    style={starBtnStyle(myCoins < 5)}
+                    disabled={myCoins < 5}
+                  >
+                    <Star size={20} fill="#fff700" color="#fff700" />
+                  </motion.button>
+                </div>
+                <h2
+                  style={{
+                    fontSize: "1.7em",
+                    fontWeight: 700,
+                    marginBottom: 8,
+                    letterSpacing: "0.01em",
+                    color: "#fff",
+                    textShadow: "0 2px 12px #6a82fb66",
+                    marginTop: 34,
+                    zIndex: 2,
+                    position: "relative"
+                  }}
+                >
+                  {track.title}
+                </h2>
+                <TrackPlayer
+                  src={track.fileUrl}
+                  avatarUrl={"/vite.svg"}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                />
+                <p style={{ fontSize: "0.8em", color: "#b3b3b3", zIndex: 2, position: "relative" }}>
+                  Свайпайте → или используйте кнопки ниже
+                </p>
+              </div>
+            </TinderCard>
+            <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
+              <motion.button
+                animate={controlsDislike}
+                whileHover={{ scale: 1.1 }}
+                onClick={handleDislike}
+                style={{
+                  background: "#232526",
+                  color: "#fff",
+                  border: "1.5px solid #fc5c7d88",
+                  boxShadow: "0 0 8px #fc5c7d44",
+                  padding: "12px 28px",
+                  borderRadius: "8px",
+                  fontWeight: "bold",
+                  fontSize: "1.1em",
+                  cursor: "pointer",
+                  transition: "box-shadow 0.2s",
+                }}
+              >
+                👎
+              </motion.button>
+              <motion.button
+                animate={controlsLike}
+                whileHover={{ scale: 1.1 }}
+                onClick={handleLike}
+                style={{
+                  background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
+                  color: "#fff",
+                  boxShadow: "0 0 12px #6a82fb88",
+                  border: "none",
+                  padding: "12px 28px",
+                  borderRadius: "8px",
+                  fontWeight: "bold",
+                  fontSize: "1.1em",
+                  cursor: "pointer",
+                  transition: "box-shadow 0.2s",
+                }}
+              >
+                👍
+              </motion.button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="no-track"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            style={{ color: "#fff", marginTop: 40 }}
+          >
+            Нет доступных треков
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
