@@ -7,6 +7,7 @@ import TrackPlayer from "./TrackPlayer";
 import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Plus, User, Star } from 'lucide-react';
+// import FooterNav from "../components/FooterNav";
 
 // const TELEGRAM_ID = '123456'; // временный ID
 // const tg = window.Telegram.WebApp;
@@ -66,27 +67,27 @@ export default function RandomPlayer() {
     await fetchTrack();
   };
 
-    const navBtnStyle = (active) => ({
-    background: active
-      ? "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)"
-      : "#232526",
-    color: "#fff",
-    boxShadow: active
-      ? "0 0 12px #6a82fb88"
-      : "0 0 8px #fc5c7d44",
-    border: active
-      ? "none"
-      : "1.5px solid #fc5c7d88",
-    padding: "10px 18px",
-    borderRadius: "8px",
-    fontWeight: "bold",
-    fontSize: "1.25em",
-    cursor: "pointer",
-    transition: "box-shadow 0.2s, background 0.2s",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  });
+  //   const navBtnStyle = (active) => ({
+  //   background: active
+  //     ? "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)"
+  //     : "#232526",
+  //   color: "#fff",
+  //   boxShadow: active
+  //     ? "0 0 12px #6a82fb88"
+  //     : "0 0 8px #fc5c7d44",
+  //   border: active
+  //     ? "none"
+  //     : "1.5px solid #fc5c7d88",
+  //   padding: "10px 18px",
+  //   borderRadius: "8px",
+  //   fontWeight: "bold",
+  //   fontSize: "1.25em",
+  //   cursor: "pointer",
+  //   transition: "box-shadow 0.2s, background 0.2s",
+  //   display: "flex",
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  // });
 
   // Дизлайк
   const handleDislike = async () => {
@@ -211,51 +212,23 @@ export default function RandomPlayer() {
           Обнулить оценки и начать заново
         </button>
       </div>
-      <div style={{ display: "flex", gap: 24, marginTop: 36, justifyContent: "center" }}>
-      <Link to="/" style={navBtnStyle(location.pathname === "/")}>
-        <Home size={28} />
-      </Link>
-      <Link to="/add" style={navBtnStyle(location.pathname === "/add")}>
-        <Plus size={28} />
-      </Link>
-      <Link to="/profile" style={navBtnStyle(location.pathname === "/profile")}>
-        <User size={28} />
-      </Link>
-    </div>
+  
     </div>
   );
 
   if (isLoading) return (
     <div style={{ color: "#fff", marginTop: 40 }}>
       Загрузка трека...
-      <div style={{ display: "flex", gap: 24, marginTop: 36, justifyContent: "center" }}>
-        <Link to="/" style={navBtnStyle(location.pathname === "/")}>
-          <Home size={28} />
-        </Link>
-        <Link to="/add" style={navBtnStyle(location.pathname === "/add")}>
-          <Plus size={28} />
-        </Link>
-        <Link to="/profile" style={navBtnStyle(location.pathname === "/profile")}>
-          <User size={28} />
-        </Link>
-      </div>
+      {/* <div style={{ display: "flex", gap: 24, marginTop: 36, justifyContent: "center" }}>
+        <FooterNav />
+      </div> */}
     </div>
   );
 
   if (!track) return (
     <div style={{ color: "#fff", marginTop: 40 }}>
       Нет доступных треков
-      <div style={{ display: "flex", gap: 24, marginTop: 36, justifyContent: "center" }}>
-        <Link to="/" style={navBtnStyle(location.pathname === "/")}>
-          <Home size={28} />
-        </Link>
-        <Link to="/add" style={navBtnStyle(location.pathname === "/add")}>
-          <Plus size={28} />
-        </Link>
-        <Link to="/profile" style={navBtnStyle(location.pathname === "/profile")}>
-          <User size={28} />
-        </Link>
-      </div>
+
     </div>
   );
 
@@ -381,17 +354,6 @@ export default function RandomPlayer() {
         </button>
       </div>
             {/* Навигация под лайком/дизлайком */}
-      <div style={{ display: "flex", gap: 24, marginTop: 28 }}>
-        <Link to="/" style={navBtnStyle(location.pathname === "/")}>
-          <Home size={28} />
-        </Link>
-        <Link to="/add" style={navBtnStyle(location.pathname === "/add")}>
-          <Plus size={28} />
-        </Link>
-        <Link to="/profile" style={navBtnStyle(location.pathname === "/profile")}>
-          <User size={28} />
-        </Link>
-      </div>
     </div>
   );
 }

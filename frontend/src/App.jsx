@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
 import WelcomeModal from "./components/WelcomeModal";
 import { getTelegramId } from "./getTelegramId";
+import FooterNav from "./components/FooterNav"; // добавь импорт
 
 export default function App() {
   const [showWelcome, setShowWelcome] = useState(false);
@@ -36,6 +37,7 @@ export default function App() {
       <main style={{ flex: 1, filter: showWelcome ? "blur(2px)" : "none" }}>
         <Outlet context={{ telegramId }} />
       </main>
+      <FooterNav /> {/* Добавь сюда */}
     </div>
   );
 }

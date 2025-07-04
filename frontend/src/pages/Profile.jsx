@@ -4,6 +4,7 @@ import { Star, Trash2, TrendingUp, Home, Plus, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import TrackPlayer from "../components/TrackPlayer";
 import { useOutletContext } from "react-router-dom";
+// import FooterNav from "../components/FooterNav";
 
 // const tg = window.Telegram.WebApp;
 // const TELEGRAM_ID = tg.initDataUnsafe.user?.id;
@@ -86,27 +87,27 @@ export default function Profile() {
   };
 
   // Стили для навигационных кнопок
-  const navBtnStyle = (active) => ({
-    background: active
-      ? "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)"
-      : "#232526",
-    color: "#fff",
-    boxShadow: active
-      ? "0 0 12px #6a82fb88"
-      : "0 0 8px #fc5c7d44",
-    border: active
-      ? "none"
-      : "1.5px solid #fc5c7d88",
-    padding: "10px 18px",
-    borderRadius: "8px",
-    fontWeight: "bold",
-    fontSize: "1.25em",
-    cursor: "pointer",
-    transition: "box-shadow 0.2s, background 0.2s",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  });
+  // const navBtnStyle = (active) => ({
+  //   background: active
+  //     ? "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)"
+  //     : "#232526",
+  //   color: "#fff",
+  //   boxShadow: active
+  //     ? "0 0 12px #6a82fb88"
+  //     : "0 0 8px #fc5c7d44",
+  //   border: active
+  //     ? "none"
+  //     : "1.5px solid #fc5c7d88",
+  //   padding: "10px 18px",
+  //   borderRadius: "8px",
+  //   fontWeight: "bold",
+  //   fontSize: "1.25em",
+  //   cursor: "pointer",
+  //   transition: "box-shadow 0.2s, background 0.2s",
+  //   display: "flex",
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  // });
 
   if (!telegramId) {
     return <div style={{ color: "#fff" }}>Загрузка...</div>;
@@ -252,17 +253,6 @@ export default function Profile() {
         </div>
       )}
       {/* Меню навигации */}
-      <div style={{ display: "flex", gap: 24, marginTop: 36, justifyContent: "center" }}>
-        <Link to="/" style={navBtnStyle(location.pathname === "/")}>
-          <Home size={28} />
-        </Link>
-        <Link to="/add" style={navBtnStyle(location.pathname === "/add")}>
-          <Plus size={28} />
-        </Link>
-        <Link to="/profile" style={navBtnStyle(location.pathname === "/profile")}>
-          <User size={28} />
-        </Link>
-      </div>
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import TrackUploader from '../components/TrackUploader';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Plus, User } from 'lucide-react';
+// import FooterNav from '../components/FooterNav';
+
 
 export default function AddTrack() {
   const location = useLocation();
@@ -55,17 +57,9 @@ export default function AddTrack() {
         </h2>
         <TrackUploader />
       </div>
-      <div style={{ display: "flex", gap: 24, marginTop: 10 }}>
-        <Link to="/" style={navBtnStyle(location.pathname === "/")}>
-          <Home size={28} />
-        </Link>
-        <Link to="/add" style={navBtnStyle(location.pathname === "/add")}>
-          <Plus size={28} />
-        </Link>
-        <Link to="/profile" style={navBtnStyle(location.pathname === "/profile")}>
-          <User size={28} />
-        </Link>
-      </div>
+      {/* <div style={{ display: "flex", gap: 24, marginTop: 10 }}>
+        <FooterNav />
+      </div> */}
     </div>
   );
 }
