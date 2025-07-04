@@ -103,6 +103,16 @@ export default function RandomPlayer() {
   // Дизлайк
   const handleDislike = async () => {
     if (!track) return;
+    controls.start({
+      scale: [1, 1.4, 0.95, 1],
+      boxShadow: [
+        "0 0 12px #6a82fb88",
+        "0 0 32px #fc5c7dcc",
+        "0 0 16px #6a82fb88",
+        "0 0 12px #6a82fb88"
+      ],
+      transition: { duration: 0.6, ease: "easeInOut"},
+    });
     try {
       await dislikeTrack(track.id, telegramId);
       await fetchMyCoins();
@@ -128,6 +138,16 @@ export default function RandomPlayer() {
   // Донат автору трека + лайк (но баланс пользователя НЕ увеличивается дополнительно)
   const handleDonate = async () => {
     if (!track || myCoins < 5) return;
+    controls.start({
+      scale: [1, 1.4, 0.95, 1],
+      boxShadow: [
+        "0 0 12px #6a82fb88",
+        "0 0 32px #fc5c7dcc",
+        "0 0 16px #6a82fb88",
+        "0 0 12px #6a82fb88"
+      ],
+      transition: { duration: 0.6, ease: "easeInOut"},
+    });
     try {
       await likeTrack(track.id, telegramId);
       await donateTrack(track.id, telegramId);
@@ -293,14 +313,16 @@ export default function RandomPlayer() {
             zIndex: 2
           }}>
             <span>💰 {myCoins}</span>
-            <button
+            <motion.button
+              animate={controls}
+              whileHover={{ scale: 1.1 }}
               onClick={handleDonate}
               title="Донат автору 5 VibeCoins и лайк"
               style={starBtnStyle(myCoins < 5)}
               disabled={myCoins < 5}
             >
               <Star size={20} fill="#fff700" color="#fff700" />
-            </button>
+            </motion.button>
           </div>
           <h2
             style={{
@@ -329,7 +351,9 @@ export default function RandomPlayer() {
         </div>
       </TinderCard>
       <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
-        <button
+        <motion.button
+          animate={controls}
+          whileHover={{ scale: 1.1 }}
           onClick={handleDislike}
           style={{
             background: "#232526",
@@ -345,7 +369,7 @@ export default function RandomPlayer() {
           }}
         >
           👎
-        </button>
+        </motion.button>
         <motion.button
           animate={controls}
           whileHover={{ scale: 1.1 }}

@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { motion, useAnimation } from "framer-motion";
 
 const AGREEMENT_PDF_URL = "https://example.com/user-agreement.pdf"; // замени на свою ссылку
 
 export default function WelcomeModal({ onAccept }) {
   const [checkedAgreement, setCheckedAgreement] = useState(false);
   const [checkedPersonal, setCheckedPersonal] = useState(false);
+  const controls = useAnimation();
 
   // Блокируем скролл под модалкой
   useEffect(() => {
