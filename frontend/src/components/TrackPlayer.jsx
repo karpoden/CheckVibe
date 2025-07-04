@@ -64,7 +64,7 @@ function Waveform({ src, progress, onSeek }) {
         gap: 1,
         userSelect: "none",
       }}
-      onClick={e => {
+      onPointerDown={e => {
         const rect = e.currentTarget.getBoundingClientRect();
         const x = e.nativeEvent.clientX - rect.left;
         const percent = Math.max(0, Math.min(1, x / rect.width));
