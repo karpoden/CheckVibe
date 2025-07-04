@@ -47,8 +47,14 @@ export default function Profile() {
       await deleteTrack(id);
       setActionMsg("Трек удалён");
       fetchData();
-    } catch {
+    } catch (err){
+      if (err.response && err.response.status === 404) {
+      setActionMsg("Трек уже был удалён");
+      fetchData();
+    } else {
       setActionMsg("Ошибка при удалении");
+      fetchData();
+    }
     }
   };
 
@@ -101,7 +107,7 @@ export default function Profile() {
     alignItems: "center",
     justifyContent: "center",
   });
-  
+
   if (!telegramId) {
     return <div style={{ color: "#fff" }}>Загрузка...</div>;
   }

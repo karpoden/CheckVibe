@@ -210,6 +210,12 @@ export default function TrackPlayer({ src, avatarUrl }) {
         src={src}
         preload="auto"
         onEnded={() => setIsPlaying(false)}
+        onError={() => {
+          setIsPlaying(false);
+          setProgress(0);
+          setDuration(0);
+          setCurrent(0);  
+  }}
         style={{ display: "none" }}
       />
       {/* Волна */}
