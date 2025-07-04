@@ -28,8 +28,8 @@ export default function FooterNav() {
     alignItems: "center",
     justifyContent: "center",
     // flexDirection: "column", // Чтобы иконка и текст шли друг под другом, убери если нужно в линию
-    width: "90px", // Фиксированная ширина
-    height: "70px", // Фиксированная высота
+    width: "75px", // Фиксированная ширина
+    height: "40px", // Фиксированная высота
     textDecoration: "none",
     textAlign: "center",
   });
@@ -41,7 +41,7 @@ export default function FooterNav() {
       alignItems: "center",
       gap: "20px",
       padding: "10px",
-      backgroundColor: "#fff",
+      backgroundColor: "#1a1a1a",
     }}>
       <Link to="/" style={navBtnStyle(pathname === "/")} className={linkClass('/')}>
         <Home size={24} />
