@@ -45,12 +45,13 @@ export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
     };
   }, [isPlaying, audioElement]);
 
-  const points = Array.from({ length: 200 }).map((_, i) => {
-    const angle = (i / 200) * 2 * Math.PI;
-    const audioIndex = Math.floor((i / 200) * audioData.length);
+  const points = Array.from({ length: 360 }).map((_, i) => {
+    const angle = (i / 360) * 2 * Math.PI;
+    const audioIndex = Math.floor((i / 360) * audioData.length);
     const audioValue = audioData[audioIndex] / 255;
-    const dynamicAmp = isPlaying ? (amp + audioValue * amp * 2) : 0;
-    const r = base + dynamicAmp + (isPlaying ? Math.sin(phase + i / 4) * amp * 0.5 : 0);
+    const smoothAudio = (audioData[audioIndex] + audioData[(audioIndex + 1) % audioData.length]) / 2 / 255;
+    const dynamicAmp = isPlaying ? (amp + smoothAudio * amp * 1.5) : 0;
+    const r = base + dynamicAmp + (isPlaying ? Math.sin(phase + i / 8) * amp * 0.3 : 0);
     return [
       center + Math.cos(angle) * r,
       center + Math.sin(angle) * r
