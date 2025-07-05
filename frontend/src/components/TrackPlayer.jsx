@@ -275,17 +275,26 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
   };
 
   // Play/Pause по тапу на аватарку
-  const handleAvatarClick = () => {
+  const handleAvatarClick = async () => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (isPlaying) {
-      audio.pause();
-      setIsPlaying(false);
-      if (onPause) onPause();
-    } else {
-      audio.play();
-      setIsPlaying(true);
-      if (onPlay) onPlay();
+    
+    try {
+      if (isPlaying) {
+        audio.pause();
+        setIsPlaying(false);
+        if (onPause) onPause();
+      } else {
+        // Для iOS нужно явно запускать воспроизведение
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+        }
+        setIsPlaying(true);
+        if (onPlay) onPlay();
+      }
+    } catch (e) {
+      console.warn('Error playing audio:', e);
     }
   };
 
@@ -307,10 +316,15 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
   }, [shouldPause, isPlaying, onPause]);
 
   useEffect(() => {
-  if (shouldPlay && !isPlaying) {
+    if (shouldPlay && !isPlaying) {
       const audio = audioRef.current;
       if (audio) {
-        audio.play();
+        // Для iOS нужно взаимодействие пользователя для автопроигрывания
+        audio.play().catch(e => {
+          console.warn('Autoplay prevented:', e);
+          // Не меняем состояние если автопроигрывание заблокировано
+          return;
+        });
         setIsPlaying(true);
         if (onPlay) onPlay();
       }
