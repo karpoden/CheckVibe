@@ -64,8 +64,9 @@ export default function TrackUploader() {
         setUploadProgress(0);
       }, 500);
     } catch (err) {
+      console.error('Upload error:', err);
       clearInterval(progressInterval);
-      setMessage('❌ Ошибка при загрузке');
+      setMessage(`❌ Ошибка: ${err.response?.data?.error || err.message || 'Неизвестная ошибка'}`);
       setIsUploading(false);
       setUploadProgress(0);
     }

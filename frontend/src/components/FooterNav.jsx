@@ -36,11 +36,11 @@ export default function FooterNav() {
 
   return (
     <nav className="footer-nav" style={{
-      display: "flex",
+      display: pathname === "/add" ? "none" : "flex",
       justifyContent: "center",
       alignItems: "center",
       gap: "20px",
-      padding: "20px 10px 20px 10px",
+      padding: "10px 10px 20px 10px",
       position: "fixed", // Фиксированное позиционирование
       bottom: "0",       // Прижимаем к низу
       left: "0",         // На всю ширину
