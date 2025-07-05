@@ -33,7 +33,7 @@ export function AvatarEqualizer({ isPlaying, size = 200 }) {
   return (
     <svg width={size} height={size} style={{ display: "block", overflow: "visible" }}>
       <defs>
-        <radialGradient id="innerGlow" cx="50%" cy="50%" r={isPlaying ? "65%" : "60%"}>
+        <radialGradient id="innerGlow" cx="50%" cy="50%" r="60%">
           <stop offset="0%" stopColor={colorPhase > 0.5 ? "#fc5c7d" : "#6a82fb"} stopOpacity={glowIntensity * 0.4} />
           <stop offset="30%" stopColor={colorPhase > 0.5 ? "#6a82fb" : "#fc5c7d"} stopOpacity={glowIntensity * 0.3} />
           <stop offset="70%" stopColor="#6a82fb" stopOpacity={glowIntensity * 0.1} />
@@ -50,12 +50,19 @@ export function AvatarEqualizer({ isPlaying, size = 200 }) {
             <feMergeNode in="SourceGraphic"/> 
           </feMerge>
         </filter>
+        <mask id="lineMask">
+          <path
+            d={`M ${points[0][0]},${points[0][1]} ${points.map(p => `L ${p[0]},${p[1]}`).join(' ')} Z`}
+            fill="white"
+          />
+        </mask>
       </defs>
       <circle
         cx={center}
         cy={center}
-        r={innerGlowRadius}
+        r={base + amp * 2}
         fill="url(#innerGlow)"
+        mask="url(#lineMask)"
       />
       <path
         d={`M ${points[0][0]},${points[0][1]} ${points.map(p => `L ${p[0]},${p[1]}`).join(' ')} Z`}
