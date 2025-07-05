@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { getUser, getTracksByUser, deleteTrack, promoteTrack } from "../api";
 import { Star, Trash2, TrendingUp, Home, Plus, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -180,7 +181,9 @@ export default function Profile() {
                   <span>Продвижение: <b style={{ color: "#fc5c7d" }}>{track.views}</b></span>
                 </div>
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => handleDelete(track.id)}
                     style={{
                       background: "#232526",
@@ -198,7 +201,7 @@ export default function Profile() {
                     }}
                   >
                     <Trash2 size={18} /> Удалить
-                  </button>
+                  </motion.button>
                   <div style={{ flex: 1, minWidth: 80 }}>
                     <input
                       type="range"
@@ -223,7 +226,9 @@ export default function Profile() {
                       Продвинуть: {promoteValue} VibeCoin
                     </div>
                   </div>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: myCoins >= promoteValue ? 1.05 : 1 }}
+                    whileTap={{ scale: myCoins >= promoteValue ? 0.95 : 1 }}
                     onClick={() => handlePromote(track.id)}
                     disabled={myCoins < promoteValue}
                     style={{
@@ -245,7 +250,7 @@ export default function Profile() {
                     }}
                   >
                     <TrendingUp size={18} /> ОК
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             );

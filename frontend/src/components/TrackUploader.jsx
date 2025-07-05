@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 // import { useState, useEffect } from 'react';
 import { uploadTrack } from '../api';
 import { useOutletContext } from "react-router-dom";
@@ -105,7 +106,14 @@ export default function TrackUploader() {
         required
         style={inputStyle}
       />
-      <button type="submit" style={buttonStyle}>Загрузить</button>
+      <motion.button 
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        type="submit" 
+        style={buttonStyle}
+      >
+        Загрузить
+      </motion.button>
       {message && <p style={{ color: "#fff", marginTop: 8, textAlign: "center" }}>{message}</p>}
     </form>
   );

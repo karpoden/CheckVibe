@@ -233,7 +233,7 @@ export default function RandomPlayer() {
                   border: "1.5px solid #6a82fb33",
                   position: "relative",
                   zIndex: 1,
-                  width: 350,
+                  width: 400,
                   maxWidth: "98vw",
                   textAlign: "center",
                   backdropFilter: "blur(2px)",
@@ -250,7 +250,7 @@ export default function RandomPlayer() {
                   background: "rgba(36,37,44,0.85)",
                   borderRadius: 8,
                   padding: "4px 10px",
-                  fontWeight: 600,
+                  fontWeight: 450,
                   fontSize: "1em",
                   color: "#6a82fb",
                   boxShadow: "0 0 8px #6a82fb44",
@@ -259,8 +259,8 @@ export default function RandomPlayer() {
                 }}>
                   <span>💰 {myCoins}</span>
                   <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                    whileHover={{ scale: 1.2 }}
+                    whileTap={{ scale: 0.8 }}
                     onClick={handleDonate}
                     title="Донат автору 5 VibeCoins и лайк"
                     style={{...starBtnStyle(myCoins < 5), pointerEvents: "auto"}}
@@ -295,8 +295,8 @@ export default function RandomPlayer() {
             </TinderCard>
             <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.85 }}
                 onClick={handleDislike}
                 style={{
                   background: "#232526",
