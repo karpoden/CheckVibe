@@ -220,36 +220,3 @@ body::after {
   width: calc(100% - 20px);
 }
 
-/* Peach theme overrides - must be at the end */
-body.peach-theme {
-  background: #ffffff !important;
-  color: #2c3e50 !important;
-}
-
-body.peach-theme h1,
-body.peach-theme h2,
-body.peach-theme h3 {
-  color: #2c3e50 !important;
-  text-shadow: none !important;
-}
-
-body.peach-theme .footer-nav {
-  background: linear-gradient(135deg, #FFEAA7 0%, #FDCB6E 100%) !important;
-  border: 1px solid #E17055 !important;
-}
-
-body.peach-theme .footer-link {
-  color: #8B4513 !important;
-}
-
-body.peach-theme .footer-link.active {
-  color: #2c3e50 !important;
-}
-
-body.peach-theme::before {
-  display: none !important;
-}
-
-body.peach-theme::after {
-  display: none !important;
-}

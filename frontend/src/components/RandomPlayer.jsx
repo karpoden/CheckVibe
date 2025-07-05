@@ -12,7 +12,7 @@ export default function RandomPlayer() {
   const [isLoading, setIsLoading] = useState(true);
   const [myCoins, setMyCoins] = useState(0);
   const [noTracks, setNoTracks] = useState(false);
-  const { telegramId, theme } = useOutletContext();
+  const { telegramId } = useOutletContext();
   const [isPlaying, setIsPlaying] = useState(false);
   const cardRef = useRef();
 
@@ -140,7 +140,7 @@ export default function RandomPlayer() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ color: theme === 'peach' ? "#2c3e50" : "#fff", marginTop: 40 }}
+            style={{ color: "#fff", marginTop: 40 }}
           >
             Загрузка трека...
           </motion.div>
@@ -175,8 +175,8 @@ export default function RandomPlayer() {
                 fontWeight: 700,
                 marginBottom: 18,
                 letterSpacing: "0.01em",
-                color: theme === 'peach' ? "#2c3e50" : "#fff",
-                textShadow: theme === 'peach' ? "0 1px 3px rgba(255,255,255,0.3)" : "0 2px 12px #6a82fb66"
+                color: "#fff",
+                textShadow: "0 2px 12px #6a82fb66"
               }}>
                 Нет новых треков
               </h2>
@@ -339,7 +339,7 @@ export default function RandomPlayer() {
             initial="hidden"
             animate="visible"
             exit="exit"
-            style={{ color: theme === 'peach' ? "#2c3e50" : "#fff", marginTop: 40 }}
+            style={{ color: "#fff", marginTop: 40 }}
           >
             Нет доступных треков
           </motion.div>
