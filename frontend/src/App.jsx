@@ -29,11 +29,24 @@ export default function App() {
     // Определяем тему Telegram
     const tg = window.Telegram?.WebApp;
     if (tg) {
+      tg.ready();
       const colorScheme = tg.colorScheme || 'dark';
       const isDark = colorScheme === 'dark';
       const newTheme = isDark ? 'dark' : 'peach';
       setTheme(newTheme);
       document.body.className = newTheme === 'peach' ? 'peach-theme' : '';
+      
+      // Слушаем изменения темы
+      tg.onEvent('themeChanged', () => {
+        const newColorScheme = tg.colorScheme || 'dark';
+        const newIsDark = newColorScheme === 'dark';
+        const updatedTheme = newIsDark ? 'dark' : 'peach';
+        setTheme(updatedTheme);
+        document.body.className = updatedTheme === 'peach' ? 'peach-theme' : '';
+      });
+    } else {
+      // Fallback для тестирования вне Telegram
+      setTheme('dark');
     }
   }, []);
 
