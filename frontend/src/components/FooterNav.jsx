@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Plus, User } from 'lucide-react';
+import { Home, Plus, Heart, User } from 'lucide-react';
 
 export default function FooterNav() {
   const { pathname } = useLocation();
@@ -57,6 +57,10 @@ export default function FooterNav() {
       <Link to="/add" style={navBtnStyle(pathname === "/add")} className={linkClass('/add')}>
         <Plus size={24} />
         <span>Add</span>
+      </Link>
+      <Link to="/liked" style={navBtnStyle(pathname === "/liked")} className={linkClass('/liked')}>
+        <Heart size={24} />
+        <span>Liked</span>
       </Link>
       <Link to="/profile" style={navBtnStyle(pathname === "/profile")} className={linkClass('/profile')}>
         <User size={24} />

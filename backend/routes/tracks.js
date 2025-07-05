@@ -319,4 +319,26 @@ router.get('/by-user/:telegramId', async (req, res) => {
   }
 });
 
+// Получить лайкнутые треки пользователя
+router.get('/liked/:telegramId', async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { telegram_id: req.params.telegramId },
+    });
+
+    if (!user) return res.json([]);
+
+    const likedTracks = await prisma.trackRating.findMany({
+      where: { userId: user.id },
+      include: { audio: true },
+    });
+
+    const tracks = likedTracks.map(rating => rating.audio);
+    res.json(tracks);
+  } catch (err) {
+    console.error('Ошибка при получении лайкнутых треков:', err);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 module.exports = router;
