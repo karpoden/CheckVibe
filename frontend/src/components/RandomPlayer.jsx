@@ -220,6 +220,7 @@ export default function RandomPlayer() {
               ref={cardRef}
               onSwipe={handleSwipe}
               preventSwipe={['up', 'down']}
+              swipeThreshold={30}
             >
               <div
                 style={{

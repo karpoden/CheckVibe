@@ -155,7 +155,7 @@ export default function TrackPlayer({ src, avatarUrl }) {
       flexDirection: "column",
       alignItems: "center",
       marginBottom: 10,
-      width: 220,
+      width: 180,
       margin: "0 auto"
     }}>
       <div style={{ position: "relative", width: 200, height: 200, marginBottom: 8 }}>
