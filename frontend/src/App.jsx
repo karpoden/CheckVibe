@@ -6,26 +6,21 @@ import FooterNav from "./components/FooterNav"; // добавь импорт
 
 export default function App() {
   const [showWelcome, setShowWelcome] = useState(false);
-  // const [userId, setUserId] = useState(null);
   const [telegramId, setTelegramId] = useState(null);
 
-
-  // useEffect(() => {
-  //   // Показывать только при первом входе (можно использовать localStorage)
-  //   if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
-  //     setUserId(window.Telegram.WebApp.initDataUnsafe.user.id);
-  //   }
-    
-  //   if (!localStorage.getItem("agreedToTerms")) {
-  //     setShowWelcome(true);
-  //   }
-  // }, []);
   useEffect(() => {
+    // Инициализация Telegram WebApp и раскрытие на весь экран
+    if (window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.expand(); // <-- Делает full screen
+    }
+
     setTelegramId(getTelegramId());
+
     if (!localStorage.getItem("agreedToTerms")) {
       setShowWelcome(true);
     }
-
   }, []);
 
   const handleAccept = () => {
@@ -39,7 +34,7 @@ export default function App() {
       <main style={{ flex: 1, filter: showWelcome ? "blur(2px)" : "none" }}>
         <Outlet context={{ telegramId }} />
       </main>
-      <FooterNav /> {/* Добавь сюда */}
+      <FooterNav />
     </div>
   );
 }
