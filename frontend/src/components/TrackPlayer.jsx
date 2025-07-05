@@ -17,8 +17,8 @@ export function AvatarEqualizer({ isPlaying, size = 200 }) {
     return () => clearInterval(interval);
   }, [isPlaying]);
 
-  const points = Array.from({ length: 120 }).map((_, i) => {
-    const angle = (i / 120) * 2 * Math.PI;
+  const points = Array.from({ length: 200 }).map((_, i) => {
+    const angle = (i / 200) * 2 * Math.PI;
     const r = base + amp + (isPlaying ? Math.sin(phase + i / 4) * amp : 0);
     return [
       center + Math.cos(angle) * r,
@@ -26,11 +26,17 @@ export function AvatarEqualizer({ isPlaying, size = 200 }) {
     ];
   });
 
-  const glowIntensity = isPlaying ? 0.6 + Math.sin(glowPhase) * 0.4 : 0.3;
+  const glowIntensity = isPlaying ? 0.8 + Math.sin(glowPhase) * 0.6 : 0.4;
+  const innerGlowRadius = base - size * 0.1;
 
   return (
     <svg width={size} height={size} style={{ display: "block" }}>
       <defs>
+        <radialGradient id="innerGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#6a82fb" stopOpacity={glowIntensity * 0.3} />
+          <stop offset="50%" stopColor="#fc5c7d" stopOpacity={glowIntensity * 0.2} />
+          <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+        </radialGradient>
         <linearGradient id="eqgrad" x1="0" y1="0" x2={size} y2={size} gradientUnits="userSpaceOnUse">
           <stop stopColor="#6a82fb" />
           <stop offset="1" stopColor="#fc5c7d" />
@@ -46,15 +52,11 @@ export function AvatarEqualizer({ isPlaying, size = 200 }) {
       <circle
         cx={center}
         cy={center}
-        r={base + amp}
-        fill="none"
-        stroke="url(#eqgrad)"
-        strokeWidth={size * 0.012}
-        opacity={glowIntensity}
-        filter="url(#glow)"
+        r={innerGlowRadius}
+        fill="url(#innerGlow)"
       />
-      <polygon
-        points={points.map(p => p.join(",")).join(" ")}
+      <path
+        d={`M ${points[0][0]},${points[0][1]} ${points.map(p => `L ${p[0]},${p[1]}`).join(' ')} Z`}
         fill="none"
         stroke="url(#eqgrad)"
         strokeWidth={size * 0.012}
