@@ -36,7 +36,7 @@ export default function FooterNav() {
 
   return (
     <nav className="footer-nav" style={{
-      display: pathname === "/add" ? "none" : "flex",
+      display: "flex",
       justifyContent: "center",
       alignItems: "center",
       gap: "20px",

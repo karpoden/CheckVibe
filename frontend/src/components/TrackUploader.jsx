@@ -40,12 +40,12 @@ export default function TrackUploader() {
     setMessage('');
 
     // Simulate progress
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 90) return prev;
-        return prev + Math.random() * 15;
-      });
-    }, 200);
+    // const progressInterval = setInterval(() => {
+    //   setUploadProgress(prev => {
+    //     if (prev >= 90) return prev;
+    //     return prev + Math.random() * 15;
+    //   });
+    // }, 200);
 
     const formData = new FormData();
     formData.append('title', title);
@@ -54,7 +54,7 @@ export default function TrackUploader() {
 
     try {
       await uploadTrack(formData);
-      clearInterval(progressInterval);
+      // clearInterval(progressInterval);
       setUploadProgress(100);
       setTimeout(() => {
         setMessage('✅ Трек загружен');
@@ -65,7 +65,7 @@ export default function TrackUploader() {
       }, 500);
     } catch (err) {
       console.error('Upload error:', err);
-      clearInterval(progressInterval);
+      // clearInterval(progressInterval);
       setMessage(`❌ Ошибка: ${err.response?.data?.error || err.message || 'Неизвестная ошибка'}`);
       setIsUploading(false);
       setUploadProgress(0);
