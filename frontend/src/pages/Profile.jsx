@@ -191,29 +191,8 @@ export default function Profile() {
                   <span>👍 <b style={{ color: "#6a82fb" }}>{track.likes}</b></span>
                   <span>🚀 <b style={{ color: "#fc5c7d" }}>{track.views}</b></span>
                 </div>
-                <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleDelete(track.id)}
-                    style={{
-                      background: "#232526",
-                      color: "#fff",
-                      border: "1.5px solid #fc5c7d88",
-                      boxShadow: "0 0 8px #fc5c7d44",
-                      padding: "8px 16px",
-                      borderRadius: "8px",
-                      fontWeight: "bold",
-                      fontSize: "1em",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6
-                    }}
-                  >
-                    <Trash2 size={18} /> Удалить
-                  </motion.button>
-                  <div style={{ flex: 1, minWidth: 120 }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16 }}>
+                  <div style={{ flex: 1 }}>
                     <input
                       type="range"
                       min={1}
@@ -260,12 +239,35 @@ export default function Profile() {
                       display: "flex",
                       alignItems: "center",
                       gap: 6,
-                      boxShadow: "0 0 8px #6a82fb44"
+                      boxShadow: "0 0 8px #6a82fb44",
+                      marginLeft: 8
                     }}
                   >
                     <TrendingUp size={18} /> ОК
                   </motion.button>
                 </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleDelete(track.id)}
+                  style={{
+                    background: "#232526",
+                    color: "#fff",
+                    border: "1.5px solid #fc5c7d88",
+                    boxShadow: "0 0 8px #fc5c7d44",
+                    padding: "8px 16px",
+                    borderRadius: "8px",
+                    fontWeight: "bold",
+                    fontSize: "1em",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    width: "fit-content"
+                  }}
+                >
+                  <Trash2 size={18} /> Удалить
+                </motion.button>
               </div>
             );
           })}
