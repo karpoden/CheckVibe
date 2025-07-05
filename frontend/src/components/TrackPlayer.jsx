@@ -63,6 +63,7 @@ function Waveform({ src, progress, onSeek }) {
         cursor: "pointer",
         gap: 1,
         userSelect: "none",
+        pointerEvents: "auto"
       }}
       onPointerDown={e => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -174,7 +175,8 @@ export default function TrackPlayer({ src, avatarUrl }) {
             top: 60, left: 60,
             zIndex: 2,
             cursor: "pointer",
-            transition: "box-shadow 0.2s"
+            transition: "box-shadow 0.2s",
+            pointerEvents: "auto"
           }}
         />
         {/* Полупрозрачная иконка play поверх аватарки */}

@@ -259,7 +259,8 @@ export default function RandomPlayer() {
                   fontSize: "1em",
                   color: "#6a82fb",
                   boxShadow: "0 0 8px #6a82fb44",
-                  zIndex: 2
+                  zIndex: 2,
+                  pointerEvents: "none"
                 }}>
                   <span>💰 {myCoins}</span>
                   <motion.button
@@ -267,7 +268,7 @@ export default function RandomPlayer() {
                     whileTap={{ scale: 0.9 }}
                     onClick={handleDonate}
                     title="Донат автору 5 VibeCoins и лайк"
-                    style={starBtnStyle(myCoins < 5)}
+                    style={{...starBtnStyle(myCoins < 5), pointerEvents: "auto"}}
                     disabled={myCoins < 5}
                   >
                     <Star size={20} fill="#fff700" color="#fff700" />
@@ -286,12 +287,14 @@ export default function RandomPlayer() {
                 }}>
                   {track.title}
                 </h2>
-                <TrackPlayer
-                  src={track.fileUrl}
-                  avatarUrl={"/vite.svg"}
-                  onPlay={() => setIsPlaying(true)}
-                  onPause={() => setIsPlaying(false)}
-                />
+                <div style={{ pointerEvents: "none" }}>
+                  <TrackPlayer
+                    src={track.fileUrl}
+                    avatarUrl={"/vite.svg"}
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                  />
+                </div>
                 <p style={{ fontSize: "0.8em", color: "#b3b3b3", zIndex: 2, position: "relative" }}>
                   Свайпайте → или используйте кнопки ниже
                 </p>
