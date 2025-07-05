@@ -144,9 +144,9 @@ export default function TrackUploader() {
               boxShadow: "0 0 8px #6a82fb44"
             }} />
           </div>
-          <p style={{ color: "#6a82fb", fontSize: "0.9em", textAlign: "center", margin: 0 }}>
+          {/* <p style={{ color: "#6a82fb", fontSize: "0.9em", textAlign: "center", margin: 0 }}>
             Загрузка... {Math.round(uploadProgress)}%
-          </p>
+          </p> */}
         </div>
       )}
       <motion.button 

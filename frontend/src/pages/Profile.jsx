@@ -162,25 +162,36 @@ export default function Profile() {
             return (
               <div key={track.id} style={{
                 background: "rgba(30,32,40,0.95)",
-                borderRadius: 12,
-                padding: 16,
+                borderRadius: 16,
+                padding: 20,
                 color: "#fff",
-                boxShadow: "0 2px 12px #6a82fb33",
+                boxShadow: "0 4px 16px #6a82fb33",
                 border: "1.5px solid #6a82fb33",
                 position: "relative"
               }}>
-                <div style={{ fontWeight: 600, fontSize: "1.08em", marginBottom: 6 }}>
+                <div style={{ fontWeight: 700, fontSize: "1.2em", marginBottom: 12, color: "#fff", textShadow: "0 2px 8px #6a82fb44" }}>
                   {track.title}
                 </div>
-                <TrackPlayer
-                  src={track.fileUrl} // URL трека src={track.fileUrl}
-                  avatarUrl={"/vite.svg"} // или свойство с аватаркой автора, если есть
-                />
-                <div style={{ display: "flex", gap: 16, alignItems: "center", fontSize: "0.97em", marginBottom: 6 }}>
-                  <span>Лайки: <b style={{ color: "#6a82fb" }}>{track.likes}</b></span>
-                  <span>Продвижение: <b style={{ color: "#fc5c7d" }}>{track.views}</b></span>
+                <div style={{ margin: "16px 0" }}>
+                  <TrackPlayer
+                    src={track.fileUrl}
+                    avatarUrl={"/vite.svg"}
+                  />
                 </div>
-                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <div style={{ 
+                  display: "flex", 
+                  gap: 20, 
+                  alignItems: "center", 
+                  fontSize: "1em", 
+                  marginBottom: 16,
+                  padding: "8px 12px",
+                  background: "rgba(36,37,44,0.6)",
+                  borderRadius: 8
+                }}>
+                  <span>👍 <b style={{ color: "#6a82fb" }}>{track.likes}</b></span>
+                  <span>🚀 <b style={{ color: "#fc5c7d" }}>{track.views}</b></span>
+                </div>
+                <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -202,7 +213,7 @@ export default function Profile() {
                   >
                     <Trash2 size={18} /> Удалить
                   </motion.button>
-                  <div style={{ flex: 1, minWidth: 80 }}>
+                  <div style={{ flex: 1, minWidth: 120 }}>
                     <input
                       type="range"
                       min={1}
@@ -219,9 +230,12 @@ export default function Profile() {
                     <div style={{
                       color: "#6a82fb",
                       fontWeight: 600,
-                      fontSize: "0.97em",
-                      marginTop: 2,
-                      textAlign: "center"
+                      fontSize: "0.9em",
+                      marginTop: 4,
+                      textAlign: "center",
+                      background: "rgba(106,130,251,0.1)",
+                      padding: "4px 8px",
+                      borderRadius: 6
                     }}>
                       Продвинуть: {promoteValue} VibeCoin
                     </div>
