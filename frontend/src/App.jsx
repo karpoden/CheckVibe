@@ -8,6 +8,7 @@ export default function App() {
   const [showWelcome, setShowWelcome] = useState(false);
   // const [userId, setUserId] = useState(null);
   const [telegramId, setTelegramId] = useState(null);
+  const [theme, setTheme] = useState('dark');
 
   // useEffect(() => {
   //   // Показывать только при первом входе (можно использовать localStorage)
@@ -24,6 +25,16 @@ export default function App() {
     if (!localStorage.getItem("agreedToTerms")) {
       setShowWelcome(true);
     }
+    
+    // Определяем тему Telegram
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      const colorScheme = tg.colorScheme || 'dark';
+      const isDark = colorScheme === 'dark';
+      const newTheme = isDark ? 'dark' : 'peach';
+      setTheme(newTheme);
+      document.body.className = newTheme === 'peach' ? 'peach-theme' : '';
+    }
   }, []);
 
   const handleAccept = () => {
@@ -35,7 +46,7 @@ export default function App() {
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {showWelcome && <WelcomeModal onAccept={handleAccept} />}
       <main style={{ flex: 1, filter: showWelcome ? "blur(2px)" : "none" }}>
-        <Outlet context={{ telegramId }} />
+        <Outlet context={{ telegramId, theme }} />
       </main>
       <FooterNav /> {/* Добавь сюда */}
     </div>

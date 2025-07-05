@@ -12,7 +12,7 @@ export default function RandomPlayer() {
   const [isLoading, setIsLoading] = useState(true);
   const [myCoins, setMyCoins] = useState(0);
   const [noTracks, setNoTracks] = useState(false);
-  const { telegramId } = useOutletContext();
+  const { telegramId, theme } = useOutletContext();
   const [isPlaying, setIsPlaying] = useState(false);
   const cardRef = useRef();
 
@@ -140,7 +140,7 @@ export default function RandomPlayer() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ color: "#fff", marginTop: 40 }}
+            style={{ color: theme === 'peach' ? "#2c3e50" : "#fff", marginTop: 40 }}
           >
             Загрузка трека...
           </motion.div>
@@ -175,8 +175,8 @@ export default function RandomPlayer() {
                 fontWeight: 700,
                 marginBottom: 18,
                 letterSpacing: "0.01em",
-                color: "#fff",
-                textShadow: "0 2px 12px #6a82fb66"
+                color: theme === 'peach' ? "#2c3e50" : "#fff",
+                textShadow: theme === 'peach' ? "0 1px 3px rgba(255,255,255,0.3)" : "0 2px 12px #6a82fb66"
               }}>
                 Нет новых треков
               </h2>
@@ -269,19 +269,39 @@ export default function RandomPlayer() {
                     <Star size={20} fill="#fff700" color="#fff700" />
                   </motion.button>
                 </div>
-                <h2 style={{
-                  fontSize: "1.7em",
-                  fontWeight: 700,
-                  marginBottom: 8,
-                  letterSpacing: "0.01em",
-                  color: "#fff",
-                  textShadow: "0 2px 12px #6a82fb66",
-                  marginTop: 34,
-                  zIndex: 2,
-                  position: "relative"
-                }}>
-                  {track.title}
-                </h2>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 34, marginBottom: 8 }}>
+                  <h2 style={{
+                    fontSize: "1.7em",
+                    fontWeight: 700,
+                    letterSpacing: "0.01em",
+                    color: theme === 'peach' ? "#2c3e50" : "#fff",
+                    textShadow: theme === 'peach' ? "0 1px 3px rgba(255,255,255,0.3)" : "0 2px 12px #6a82fb66",
+                    zIndex: 2,
+                    position: "relative",
+                    margin: 0
+                  }}>
+                    {track.title}
+                  </h2>
+                  <a
+                    href="https://t.me/dankarp"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: "#6a82fb",
+                      fontSize: "0.9em",
+                      textDecoration: "none",
+                      fontWeight: 500,
+                      opacity: 0.8,
+                      transition: "opacity 0.2s",
+                      zIndex: 2,
+                      position: "relative"
+                    }}
+                    onMouseEnter={(e) => e.target.style.opacity = 1}
+                    onMouseLeave={(e) => e.target.style.opacity = 0.8}
+                  >
+                    @dankarp
+                  </a>
+                </div>
                 <TrackPlayer
                   src={track.fileUrl}
                   avatarUrl={"/vite.svg"}
@@ -339,7 +359,7 @@ export default function RandomPlayer() {
             initial="hidden"
             animate="visible"
             exit="exit"
-            style={{ color: "#fff", marginTop: 40 }}
+            style={{ color: theme === 'peach' ? "#2c3e50" : "#fff", marginTop: 40 }}
           >
             Нет доступных треков
           </motion.div>
