@@ -14,10 +14,17 @@ export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
   useEffect(() => {
     if (!isPlaying || !audioElement) return;
     
-    // Создаем анализатор аудио
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioContext.createAnalyser();
-    const source = audioContext.createMediaElementSource(audioElement);
+    // Проверяем, не создан ли уже контекст для этого элемента
+    if (audioElement._audioContextCreated) return;
+    
+    try {
+      // Создаем анализатор аудио
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const analyser = audioContext.createAnalyser();
+      const source = audioContext.createMediaElementSource(audioElement);
+      
+      // Помечаем элемент как уже связанный с контекстом
+      audioElement._audioContextCreated = true;
     
     analyser.fftSize = 64;
     const bufferLength = analyser.frequencyBinCount;
@@ -43,17 +50,24 @@ export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
       }
     };
     
-    const interval = setInterval(updateAudioData, 40);
-    return () => {
-      clearInterval(interval);
-      try {
-        if (audioContext.state !== 'closed') { 
-          audioContext.close();
+      const interval = setInterval(updateAudioData, 40);
+      return () => {
+        clearInterval(interval);
+        try {
+          if (audioContext.state !== 'closed') { 
+            audioContext.close();
+          }
+          if (audioElement) {
+            audioElement._audioContextCreated = false;
+          }
+        } catch (e) {
+          console.warn('Error closing audio context:', e);
         }
-      } catch (e) {
-        console.warn('Error closing audio context:', e);
-      }
-    };
+      };
+    } catch (e) {
+      console.warn('Error creating audio context:', e);
+      return;
+    }
   }, [isPlaying, audioElement]);
 
   const points = Array.from({ length: 201 }).map((_, i) => {
@@ -187,10 +201,22 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
     };
     audio.addEventListener("timeupdate", update);
     audio.addEventListener("loadedmetadata", () => setDuration(audio.duration));
+    
+    // Настройка Media Session API для фонового воспроизведения
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: 'CheckVibe Track',
+        artist: 'Unknown Artist',
+        artwork: [
+          { src: avatarUrl || '/vite.svg', sizes: '96x96', type: 'image/png' }
+        ]
+      });
+    }
+    
     return () => {
       audio.removeEventListener("timeupdate", update);
     };
-  }, []);
+  }, [avatarUrl]);
 
   const handleWaveformSeek = (percent) => {
     const audio = audioRef.current;
