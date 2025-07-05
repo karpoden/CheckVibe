@@ -156,7 +156,8 @@ export default function TrackPlayer({ src, avatarUrl }) {
       alignItems: "center",
       marginBottom: 10,
       width: 220,
-      margin: "0 auto"
+      margin: "0 auto",
+      pointerEvents: "none"
     }}>
       <div style={{ position: "relative", width: 200, height: 200, marginBottom: 8 }}>
         <img

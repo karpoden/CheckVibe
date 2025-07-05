@@ -287,14 +287,12 @@ export default function RandomPlayer() {
                 }}>
                   {track.title}
                 </h2>
-                <div style={{ pointerEvents: "none" }}>
-                  <TrackPlayer
-                    src={track.fileUrl}
-                    avatarUrl={"/vite.svg"}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                  />
-                </div>
+                <TrackPlayer
+                  src={track.fileUrl}
+                  avatarUrl={"/vite.svg"}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                />
                 <p style={{ fontSize: "0.8em", color: "#b3b3b3", zIndex: 2, position: "relative" }}>
                   Свайпайте → или используйте кнопки ниже
                 </p>
