@@ -208,7 +208,7 @@ export default function RandomPlayer() {
           </motion.div>
         ) : track ? (
           <motion.div
-            key="track"
+            key={`track-${track.id}`}
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -220,7 +220,7 @@ export default function RandomPlayer() {
               ref={cardRef}
               onSwipe={handleSwipe}
               preventSwipe={['up', 'down']}
-              // swipeThreshold={150}
+              swipeThreshold={30}
             >
               <div
                 style={{
