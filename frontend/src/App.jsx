@@ -28,25 +28,34 @@ export default function App() {
     
     // Определяем тему Telegram
     const tg = window.Telegram?.WebApp;
+    console.log('Telegram WebApp:', tg);
+    
     if (tg) {
       tg.ready();
-      const colorScheme = tg.colorScheme || 'dark';
-      const isDark = colorScheme === 'dark';
-      const newTheme = isDark ? 'dark' : 'peach';
-      setTheme(newTheme);
-      document.body.className = newTheme === 'peach' ? 'peach-theme' : '';
+      
+      // Задержка для инициализации
+      setTimeout(() => {
+        const colorScheme = tg.colorScheme;
+        console.log('Color scheme:', colorScheme);
+        const isDark = colorScheme === 'dark';
+        const newTheme = isDark ? 'dark' : 'peach';
+        console.log('Setting theme:', newTheme);
+        setTheme(newTheme);
+        document.body.className = newTheme === 'peach' ? 'peach-theme' : '';
+      }, 100);
       
       // Слушаем изменения темы
       tg.onEvent('themeChanged', () => {
-        const newColorScheme = tg.colorScheme || 'dark';
+        const newColorScheme = tg.colorScheme;
         const newIsDark = newColorScheme === 'dark';
         const updatedTheme = newIsDark ? 'dark' : 'peach';
         setTheme(updatedTheme);
         document.body.className = updatedTheme === 'peach' ? 'peach-theme' : '';
       });
     } else {
-      // Fallback для тестирования вне Telegram
-      setTheme('dark');
+      console.log('Telegram WebApp not available');
+      setTheme('peach'); // Для тестирования
+      document.body.className = 'peach-theme';
     }
   }, []);
 
