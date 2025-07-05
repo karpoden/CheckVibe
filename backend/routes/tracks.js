@@ -140,11 +140,17 @@ router.post('/:id/like', async (req, res) => {
       data: { likes: { increment: 1 } },
     });
 
-    await prisma.trackRating.upsert({
-      where: { userId_audioId: { userId: user.id, audioId: audio.id } },
-      update: {},
-      create: { userId: user.id, audioId: audio.id }
+    // Проверяем, есть ли уже рейтинг
+    const existingRating = await prisma.trackRating.findUnique({
+      where: { userId_audioId: { userId: user.id, audioId: audio.id } }
     });
+    
+    // Создаем рейтинг только если его еще нет
+    if (!existingRating) {
+      await prisma.trackRating.create({
+        data: { userId: user.id, audioId: audio.id }
+      });
+    }
 
     res.json({ success: true });
   } catch (err) {
@@ -255,6 +261,7 @@ router.post('/reset-ratings', async (req, res) => {
   const user = await prisma.user.findUnique({ where: { telegram_id: telegramId } });
   if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
 
+  // Очищаем только рейтинги для повторного просмотра, но оставляем лайки
   await prisma.trackRating.deleteMany({ where: { userId: user.id } });
   res.json({ success: true });
 });
