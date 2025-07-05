@@ -14,7 +14,7 @@ export default function RandomPlayer() {
   const [noTracks, setNoTracks] = useState(false);
   const { telegramId } = useOutletContext();
   const [isPlaying, setIsPlaying] = useState(false);
-  const tinderCardRef = useRef();
+  const tinderCardRefs = useRef([]);
   const [key, setKey] = useState(0); // Для принудительного ререндера карточки
 
   const fetchMyCoins = async () => {
@@ -65,15 +65,13 @@ export default function RandomPlayer() {
   };
 
   const handleLike = () => {
-    if (tinderCardRef.current) {
-      tinderCardRef.current.swipe('right');
-    }
+    const card = tinderCardRefs.current[0];
+    if (card) card.swipe('right');
   };
 
   const handleDislike = () => {
-    if (tinderCardRef.current) {
-      tinderCardRef.current.swipe('left');
-    }
+    const card = tinderCardRefs.current[0];
+    if (card) card.swipe('left');
   };
 
   const handleResetRatings = async () => {
@@ -223,7 +221,7 @@ export default function RandomPlayer() {
               key={key} // Используем key для принудительного ререндера
               onSwipe={handleSwipe}
               preventSwipe={['up', 'down']}
-              ref={tinderCardRef}
+              ref={(el) => (tinderCardRefs.current[0] = el)}
               swipeThreshold={50}
               flickOnSwipe={true}
               onCardLeftScreen={() => {}}
