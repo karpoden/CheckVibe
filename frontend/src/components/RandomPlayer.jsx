@@ -59,7 +59,6 @@ export default function RandomPlayer() {
     try {
       await likeTrack(track.id, telegramId);
       await fetchMyCoins();
-      await handleSwipe('right');
     } catch (err) {}
     await fetchTrack();
   };
@@ -69,7 +68,6 @@ export default function RandomPlayer() {
     try {
       await dislikeTrack(track.id, telegramId);
       await fetchMyCoins();
-      await handleSwipe('left');
     } catch (err) {}
     await fetchTrack();
   };
@@ -87,7 +85,6 @@ export default function RandomPlayer() {
       await donateTrack(track.id, telegramId);
       await fetchMyCoins();
       await fetchTrack();
-      await handleSwipe('right');
     } catch (err) {
       console.error(err);
     }
