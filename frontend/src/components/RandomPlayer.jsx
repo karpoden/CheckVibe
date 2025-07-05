@@ -220,7 +220,7 @@ export default function RandomPlayer() {
               ref={cardRef}
               onSwipe={handleSwipe}
               preventSwipe={['up', 'down']}
-              swipeThreshold={150}
+              // swipeThreshold={150}
             >
               <div
                 style={{
@@ -233,7 +233,7 @@ export default function RandomPlayer() {
                   border: "1.5px solid #6a82fb33",
                   position: "relative",
                   zIndex: 1,
-                  width: 400,
+                  width: 350,
                   maxWidth: "98vw",
                   textAlign: "center",
                   backdropFilter: "blur(2px)",
