@@ -176,11 +176,10 @@ body::after {
   justify-content: space-around;
   width: 100%;
   padding: 12px 0;
-  border-top: 1.5px solid #6a82fb33;
   background: rgba(30,32,40,0.97);
   box-shadow: 0 0 24px #6a82fb22;
   position: fixed;
-  bottom: 0;
+  bottom: 20px;
   left: 0;
   z-index: 10;
 }

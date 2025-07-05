@@ -114,7 +114,7 @@ export default function Profile() {
     return <div style={{ color: "#fff" }}>Загрузка...</div>;
   }
   return (
-    <div style={{ maxWidth: 420, margin: "0 auto", padding: 24 }}>
+    <div style={{ maxWidth: 420, margin: "0 auto", padding: 24, paddingBottom: 120 }}>
       <h2 style={{
         color: "#fff",
         fontWeight: 700,
@@ -257,7 +257,6 @@ export default function Profile() {
           })}
         </div>
       )}
-      {/* Меню навигации */}
     </div>
   );
 }
