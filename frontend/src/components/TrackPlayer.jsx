@@ -276,9 +276,6 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
 
   // Play/Pause по тапу на аватарку
   const handleAvatarClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
     const audio = audioRef.current;
     if (!audio) return;
     
@@ -345,10 +342,7 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
         <img
           src={avatarUrl || "/vite.svg"}
           alt="avatar"
-          onTouchEnd={(e) => {
-            e.preventDefault();
-            handleAvatarClick(e);
-          }}
+          onTouchEnd={handleAvatarClick}
           onClick={handleAvatarClick}
           style={{
             width: 80,
