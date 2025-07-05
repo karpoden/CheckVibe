@@ -46,9 +46,8 @@ export default function Liked() {
         marginBottom: 18,
         textShadow: "0 2px 12px #6a82fb66"
       }}>
-        Понравившиеся треки
       </h2>
-      <div style={{
+      {/* <div style={{
         background: "rgba(36,37,44,0.85)",
         borderRadius: 10,
         padding: "10px 18px",
@@ -63,7 +62,7 @@ export default function Liked() {
       }}>
         Баланс: <span style={{ color: "#6a82fb", fontWeight: 700 }}>{myCoins} VibeCoins</span>
         <span>⭐</span>
-      </div>
+      </div> */}
       
       {loading ? (
         <div style={{ color: "#fff" }}>Загрузка...</div>
@@ -93,7 +92,7 @@ export default function Liked() {
                   shouldPause={currentlyPlaying !== null && currentlyPlaying !== track.id}
                 />
               </div>
-              <div style={{ 
+              {/* <div style={{ 
                 display: "flex", 
                 gap: 20, 
                 alignItems: "center", 
@@ -104,7 +103,7 @@ export default function Liked() {
               }}>
                 <span>👍 <b style={{ color: "#6a82fb" }}>{track.likes}</b></span>
                 <span>🚀 <b style={{ color: "#fc5c7d" }}>{track.views}</b></span>
-              </div>
+              </div> */}
             </div>
           ))}
         </div>

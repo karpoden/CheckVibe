@@ -123,7 +123,6 @@ export default function Profile() {
         marginBottom: 18,
         textShadow: "0 2px 12px #6a82fb66"
       }}>
-        Профиль
       </h2>
       <div style={{
         background: "rgba(36,37,44,0.85)",
