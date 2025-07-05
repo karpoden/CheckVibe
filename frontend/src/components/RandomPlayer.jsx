@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import TinderCard from 'react-tinder-card';
 import { useOutletContext } from "react-router-dom";
 import { getRandomTrack, likeTrack, donateTrack, getUser, dislikeTrack } from '../api';
-import { motion, AnimatePresence, useAnimation } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import TrackPlayer from "./TrackPlayer";
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
@@ -14,17 +14,12 @@ export default function RandomPlayer() {
   const [myCoins, setMyCoins] = useState(0);
   const cardRef = useRef();
   const [noTracks, setNoTracks] = useState(false);
-  const location = useLocation();
   const { telegramId } = useOutletContext();
-  const controlsLike = useAnimation();
-  const controlsDislike = useAnimation();
-  const controlsDonate = useAnimation();
-  const controlsResetRating = useAnimation();
   const [isPlaying, setIsPlaying] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState(null);
   const [isSwiping, setIsSwiping] = useState(false);
+  const tinderCardRef = useRef();
 
-  // Получить свои VibeCoins
   const fetchMyCoins = async () => {
     try {
       const res = await getUser(telegramId);
@@ -54,27 +49,20 @@ export default function RandomPlayer() {
     }
   };
 
-  // Анимация свайпа
   const swipeAnimation = async (direction) => {
     setIsSwiping(true);
     setSwipeDirection(direction);
-    await new Promise(resolve => setTimeout(resolve, 300)); // Уменьшил время анимации
+    await new Promise(resolve => setTimeout(resolve, 300));
     setIsSwiping(false);
   };
 
-  // Общий обработчик оценки
   const handleRate = async (direction, apiCall) => {
     if (!track || isSwiping) return;
     
-    // Анимация кнопки
-    const controls = direction === 'right' ? controlsLike : controlsDislike;
-    await controls.start({
-      scale: [1, 1.3, 1],
-      transition: { duration: 0.3 }
-    });
-    
-    // Анимация карточки
-    await swipeAnimation(direction);
+    // Программный свайп карточки
+    if (tinderCardRef.current) {
+      tinderCardRef.current.swipe(direction);
+    }
     
     try {
       await apiCall(track.id, telegramId);
@@ -82,39 +70,32 @@ export default function RandomPlayer() {
     } catch (err) {
       console.error(err);
     }
-    
-    await fetchTrack();
   };
 
-  // Лайк
   const handleLike = () => handleRate('right', likeTrack);
-
-  // Дизлайк
   const handleDislike = () => handleRate('left', dislikeTrack);
 
-  // Свайп
   const handleSwipe = async (direction) => {
-    if (direction === 'right') await handleLike();
-    else if (direction === 'left') await handleDislike();
+    if (direction === 'right') {
+      await swipeAnimation('right');
+      await likeTrack(track.id, telegramId);
+      await fetchMyCoins();
+      await fetchTrack();
+    } else if (direction === 'left') {
+      await swipeAnimation('left');
+      await dislikeTrack(track.id, telegramId);
+      await fetchMyCoins();
+      await fetchTrack();
+    }
   };
 
   const handleResetRatings = async () => {
-    await controlsResetRating.start({
-      scale: [1, 1.2, 1],
-      transition: { duration: 0.3 }
-    });
     await axios.post('/api/tracks/reset-ratings', { telegramId });
     fetchTrack();
   };
 
-  // Донат
   const handleDonate = async () => {
     if (!track || myCoins < 5 || isSwiping) return;
-    
-    await controlsDonate.start({
-      scale: [1, 1.3, 1],
-      transition: { duration: 0.3 }
-    });
     
     await swipeAnimation('right');
     
@@ -135,7 +116,6 @@ export default function RandomPlayer() {
     }
   }, [telegramId]);
 
-  // Стили для звездочки (доната)
   const starBtnStyle = (disabled) => ({
     background: "linear-gradient(90deg, #fc5c7d 0%, #6a82fb 100%)",
     color: "#fff",
@@ -156,7 +136,6 @@ export default function RandomPlayer() {
     pointerEvents: disabled ? "none" : "auto",
   });
 
-  // Анимации
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
@@ -245,8 +224,8 @@ export default function RandomPlayer() {
                 Хотите просмотреть их заново?
               </p>
               <motion.button
-                animate={controlsResetRating}
                 whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleResetRatings}
                 style={{
                   background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
@@ -279,8 +258,10 @@ export default function RandomPlayer() {
               key={track.id}
               onSwipe={handleSwipe}
               preventSwipe={['up', 'down']}
-              ref={cardRef}
-              swipeThreshold={100} // Уменьшил порог свайпа для более быстрого срабатывания
+              ref={tinderCardRef}
+              swipeThreshold={100}
+              flickOnSwipe={true}
+              onCardLeftScreen={() => {}}
             >
               <motion.div
                 custom={swipeDirection}
@@ -323,8 +304,8 @@ export default function RandomPlayer() {
                 }}>
                   <span>💰 {myCoins}</span>
                   <motion.button
-                    animate={controlsDonate}
                     whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={handleDonate}
                     title="Донат автору 5 VibeCoins и лайк"
                     style={starBtnStyle(myCoins < 5)}
@@ -359,7 +340,6 @@ export default function RandomPlayer() {
             </TinderCard>
             <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
               <motion.button
-                animate={controlsDislike}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleDislike}
@@ -378,7 +358,6 @@ export default function RandomPlayer() {
                 👎
               </motion.button>
               <motion.button
-                animate={controlsLike}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleLike}
