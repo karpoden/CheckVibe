@@ -52,19 +52,19 @@ export default function FooterNav() {
     }}>
       <Link to="/" style={navBtnStyle(pathname === "/")} className={linkClass('/')}>
         <Home size={24} />
-        <span>Home</span>
+        <span></span>
       </Link>
       <Link to="/add" style={navBtnStyle(pathname === "/add")} className={linkClass('/add')}>
         <Plus size={24} />
-        <span>Add</span>
+        <span></span>
       </Link>
       <Link to="/liked" style={navBtnStyle(pathname === "/liked")} className={linkClass('/liked')}>
         <Heart size={24} />
-        <span>Liked</span>
+        <span></span>
       </Link>
       <Link to="/profile" style={navBtnStyle(pathname === "/profile")} className={linkClass('/profile')}>
         <User size={24} />
-        <span>Profile</span>
+        <span></span>
       </Link>
     </nav>
   );
