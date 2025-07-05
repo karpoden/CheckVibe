@@ -275,7 +275,10 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
   };
 
   // Play/Pause по тапу на аватарку
-  const handleAvatarClick = () => {
+  const handleAvatarClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const audio = audioRef.current;
     if (!audio) return;
     
@@ -284,9 +287,13 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
       setIsPlaying(false);
       if (onPause) onPause();
     } else {
-      audio.play().catch(e => {
-        console.warn('Error playing audio:', e);
-      });
+      // Для iOS нужно пользовательское взаимодействие
+      const playPromise = audio.play();
+      if (playPromise) {
+        playPromise.catch(e => {
+          console.warn('Error playing audio:', e);
+        });
+      }
       setIsPlaying(true);
       if (onPlay) onPlay();
     }
@@ -338,7 +345,10 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
         <img
           src={avatarUrl || "/vite.svg"}
           alt="avatar"
-          onTouchEnd={handleAvatarClick}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            handleAvatarClick(e);
+          }}
           onClick={handleAvatarClick}
           style={{
             width: 80,
