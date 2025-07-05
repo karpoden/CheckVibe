@@ -118,16 +118,16 @@ export default function RandomPlayer() {
   });
 
   const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, scale: 0.9 },
     visible: { 
       opacity: 1, 
-      y: 0,
-      transition: { duration: 0.3 }
+      scale: 1,
+      transition: { duration: 0.4, ease: "easeOut" }
     },
     exit: { 
       opacity: 0, 
-      y: -20,
-      transition: { duration: 0.2 }
+      scale: 0.9,
+      transition: { duration: 0.3, ease: "easeIn" }
     }
   };
 
@@ -233,7 +233,7 @@ export default function RandomPlayer() {
                   border: "1.5px solid #6a82fb33",
                   position: "relative",
                   zIndex: 1,
-                  width: 400,
+                  width: 320,
                   maxWidth: "98vw",
                   textAlign: "center",
                   backdropFilter: "blur(2px)",
@@ -250,7 +250,7 @@ export default function RandomPlayer() {
                   background: "rgba(36,37,44,0.85)",
                   borderRadius: 8,
                   padding: "4px 10px",
-                  fontWeight: 450,
+                  fontWeight: 650,
                   fontSize: "1em",
                   color: "#6a82fb",
                   boxShadow: "0 0 8px #6a82fb44",
@@ -313,8 +313,8 @@ export default function RandomPlayer() {
                 👎
               </motion.button>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.85 }}
                 onClick={handleLike}
                 style={{
                   background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
