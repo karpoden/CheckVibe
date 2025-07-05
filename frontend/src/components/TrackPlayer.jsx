@@ -27,7 +27,7 @@ export function AvatarEqualizer({ isPlaying, size = 200 }) {
   });
 
   const glowIntensity = isPlaying ? 0.8 + Math.sin(glowPhase) * 0.6 : 0.4;
-  const innerGlowRadius = isPlaying ? base + amp - size * 0.01 : base + size * 0.05;
+  const innerGlowRadius = isPlaying ? base + amp + (isPlaying ? Math.sin(phase + 1) * amp * 0.5 : 0) - size * 0.01 : base + size * 0.05;
   const colorPhase = Math.sin(glowPhase * 0.7) * 0.5 + 0.5;
 
   return (
