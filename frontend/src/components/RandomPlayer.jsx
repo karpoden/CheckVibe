@@ -14,8 +14,8 @@ export default function RandomPlayer() {
   const [noTracks, setNoTracks] = useState(false);
   const { telegramId } = useOutletContext();
   const [isPlaying, setIsPlaying] = useState(false);
-  const tinderCardRefs = useRef([]);
-  const [key, setKey] = useState(0); // Для принудительного ререндера карточки
+  const tinderCardRef = useRef(null);
+  const [key, setKey] = useState(0);
 
   const fetchMyCoins = async () => {
     try {
@@ -32,7 +32,7 @@ export default function RandomPlayer() {
       const res = await getRandomTrack(telegramId);
       setTrack(res.data);
       setNoTracks(false);
-      setKey(prev => prev + 1); // Обновляем ключ для ререндера
+      setKey(prev => prev + 1);
     } catch (err) {
       if (err.response?.status === 404 && err.response.data?.canReset) {
         setNoTracks(true);
@@ -46,11 +46,11 @@ export default function RandomPlayer() {
     }
   };
 
-  const handleSwipe = async (direction) => {
+  const handleSwipe = async (dir) => {
     try {
-      if (direction === 'right') {
+      if (dir === 'right') {
         await likeTrack(track.id, telegramId);
-      } else if (direction === 'left') {
+      } else if (dir === 'left') {
         await dislikeTrack(track.id, telegramId);
       }
       await fetchMyCoins();
@@ -58,20 +58,21 @@ export default function RandomPlayer() {
       console.error(err);
     }
     
-    // Задержка для анимации свайпа перед загрузкой нового трека
     setTimeout(() => {
       fetchTrack();
     }, 300);
   };
 
   const handleLike = () => {
-    const card = tinderCardRefs.current[0];
-    if (card) card.swipe('right');
+    if (tinderCardRef.current) {
+      tinderCardRef.current.swipe('right').catch(() => {});
+    }
   };
 
   const handleDislike = () => {
-    const card = tinderCardRefs.current[0];
-    if (card) card.swipe('left');
+    if (tinderCardRef.current) {
+      tinderCardRef.current.swipe('left').catch(() => {});
+    }
   };
 
   const handleResetRatings = async () => {
@@ -218,10 +219,10 @@ export default function RandomPlayer() {
             style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
           >
             <TinderCard
-              key={key} // Используем key для принудительного ререндера
+              key={key}
+              ref={tinderCardRef}
               onSwipe={handleSwipe}
               preventSwipe={['up', 'down']}
-              ref={(el) => (tinderCardRefs.current[0] = el)}
               swipeThreshold={50}
               flickOnSwipe={true}
               onCardLeftScreen={() => {}}
