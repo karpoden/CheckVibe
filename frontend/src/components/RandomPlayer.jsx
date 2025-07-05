@@ -14,9 +14,8 @@ export default function RandomPlayer() {
   const [noTracks, setNoTracks] = useState(false);
   const { telegramId } = useOutletContext();
   const [isPlaying, setIsPlaying] = useState(false);
-  const [swipeDirection, setSwipeDirection] = useState(null);
   const tinderCardRef = useRef();
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [key, setKey] = useState(0); // Для принудительного ререндера карточки
 
   const fetchMyCoins = async () => {
     try {
@@ -33,7 +32,7 @@ export default function RandomPlayer() {
       const res = await getRandomTrack(telegramId);
       setTrack(res.data);
       setNoTracks(false);
-      setSwipeDirection(null);
+      setKey(prev => prev + 1); // Обновляем ключ для ререндера
     } catch (err) {
       if (err.response?.status === 404 && err.response.data?.canReset) {
         setNoTracks(true);
@@ -48,11 +47,6 @@ export default function RandomPlayer() {
   };
 
   const handleSwipe = async (direction) => {
-    if (isAnimating) return;
-    
-    setIsAnimating(true);
-    setSwipeDirection(direction);
-    
     try {
       if (direction === 'right') {
         await likeTrack(track.id, telegramId);
@@ -64,20 +58,20 @@ export default function RandomPlayer() {
       console.error(err);
     }
     
-    // Ждем завершения анимации перед загрузкой нового трека
+    // Задержка для анимации свайпа перед загрузкой нового трека
     setTimeout(() => {
-      fetchTrack().finally(() => setIsAnimating(false));
+      fetchTrack();
     }, 300);
   };
 
   const handleLike = () => {
-    if (tinderCardRef.current && !isAnimating) {
+    if (tinderCardRef.current) {
       tinderCardRef.current.swipe('right');
     }
   };
 
   const handleDislike = () => {
-    if (tinderCardRef.current && !isAnimating) {
+    if (tinderCardRef.current) {
       tinderCardRef.current.swipe('left');
     }
   };
@@ -88,7 +82,7 @@ export default function RandomPlayer() {
   };
 
   const handleDonate = async () => {
-    if (!track || myCoins < 5 || isAnimating) return;
+    if (!track || myCoins < 5) return;
     
     try {
       await likeTrack(track.id, telegramId);
@@ -226,7 +220,7 @@ export default function RandomPlayer() {
             style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
           >
             <TinderCard
-              key={track.id}
+              key={key} // Используем key для принудительного ререндера
               onSwipe={handleSwipe}
               preventSwipe={['up', 'down']}
               ref={tinderCardRef}
