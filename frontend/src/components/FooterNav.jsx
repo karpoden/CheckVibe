@@ -42,7 +42,7 @@ export default function FooterNav() {
       gap: "20px",
       padding: "0px 10px 10px 10px",
       position: "fixed", // Фиксированное позиционирование
-      bottom: "0",       // Прижимаем к низу
+      bottom: "30",       // Прижимаем к низу
       left: "0",         // На всю ширину
       right: "0",
       width: "100%",
