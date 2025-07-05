@@ -296,13 +296,16 @@ export default function RandomPlayer() {
             <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
               <motion.button
                 whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.85 }}
+                whileTap={{ 
+                  scale: 0.85,
+                  boxShadow: "0 0 20px #fc5c7d",
+                  transition: { duration: 0.1 }
+                }}
                 onClick={handleDislike}
                 style={{
                   background: "#232526",
                   color: "#fff",
                   border: "1.5px solid #fc5c7d88",
-                  boxShadow: "0 0 8px #fc5c7d44",
                   padding: "12px 28px",
                   borderRadius: "8px",
                   fontWeight: "bold",
@@ -314,12 +317,15 @@ export default function RandomPlayer() {
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.85 }}
+                whileTap={{ 
+                  scale: 0.85,
+                  boxShadow: "0 0 20px #6a82fb",
+                  transition: { duration: 0.1 }
+                }}
                 onClick={handleLike}
                 style={{
                   background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
                   color: "#fff",
-                  boxShadow: "0 0 12px #6a82fb88",
                   border: "none",
                   padding: "12px 28px",
                   borderRadius: "8px",
