@@ -27,14 +27,16 @@ export function AvatarEqualizer({ isPlaying, size = 200 }) {
   });
 
   const glowIntensity = isPlaying ? 0.8 + Math.sin(glowPhase) * 0.6 : 0.4;
-  const innerGlowRadius = base - size * 0.1;
+  const innerGlowRadius = base + size * 0.05;
+  const colorPhase = Math.sin(glowPhase * 0.7) * 0.5 + 0.5;
 
   return (
     <svg width={size} height={size} style={{ display: "block" }}>
       <defs>
-        <radialGradient id="innerGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#6a82fb" stopOpacity={glowIntensity * 0.3} />
-          <stop offset="50%" stopColor="#fc5c7d" stopOpacity={glowIntensity * 0.2} />
+        <radialGradient id="innerGlow" cx="50%" cy="50%" r="60%">
+          <stop offset="0%" stopColor={colorPhase > 0.5 ? "#fc5c7d" : "#6a82fb"} stopOpacity={glowIntensity * 0.4} />
+          <stop offset="30%" stopColor={colorPhase > 0.5 ? "#6a82fb" : "#fc5c7d"} stopOpacity={glowIntensity * 0.3} />
+          <stop offset="70%" stopColor="#6a82fb" stopOpacity={glowIntensity * 0.1} />
           <stop offset="100%" stopColor="transparent" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="eqgrad" x1="0" y1="0" x2={size} y2={size} gradientUnits="userSpaceOnUse">
