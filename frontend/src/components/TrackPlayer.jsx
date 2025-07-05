@@ -63,7 +63,7 @@ function Waveform({ src, progress, onSeek }) {
         cursor: "pointer",
         gap: 1,
         userSelect: "none",
-        pointerEvents: "auto"
+
       }}
       onPointerDown={e => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -156,8 +156,7 @@ export default function TrackPlayer({ src, avatarUrl }) {
       alignItems: "center",
       marginBottom: 10,
       width: 220,
-      margin: "0 auto",
-      pointerEvents: "none"
+      margin: "0 auto"
     }}>
       <div style={{ position: "relative", width: 200, height: 200, marginBottom: 8 }}>
         <img
@@ -177,7 +176,7 @@ export default function TrackPlayer({ src, avatarUrl }) {
             zIndex: 2,
             cursor: "pointer",
             transition: "box-shadow 0.2s",
-            pointerEvents: "auto"
+pointerEvents: "auto"
           }}
         />
         {/* Полупрозрачная иконка play поверх аватарки */}
