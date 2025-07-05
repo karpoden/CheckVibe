@@ -3,40 +3,65 @@ import React, { useRef, useState, useEffect } from "react";
 // SVG эквалайзер-волна вокруг аватарки
 export function AvatarEqualizer({ isPlaying, size = 200 }) {
   const [phase, setPhase] = useState(0);
+  const [glowPhase, setGlowPhase] = useState(0);
   const center = size / 2;
   const base = size * 0.41;
   const amp = isPlaying ? size * 0.045 : 0;
 
   useEffect(() => {
     if (!isPlaying) return;
-    const interval = setInterval(() => setPhase(p => p + 0.15), 40);
+    const interval = setInterval(() => {
+      setPhase(p => p + 0.15);
+      setGlowPhase(g => g + 0.1);
+    }, 40);
     return () => clearInterval(interval);
   }, [isPlaying]);
 
-  const points = Array.from({ length: 96 }).map((_, i) => {
-    const angle = (i / 96) * 2 * Math.PI;
-    const r = base + amp + (isPlaying ? Math.sin(phase + i / 3) * amp : 0);
+  const points = Array.from({ length: 120 }).map((_, i) => {
+    const angle = (i / 120) * 2 * Math.PI;
+    const r = base + amp + (isPlaying ? Math.sin(phase + i / 4) * amp : 0);
     return [
       center + Math.cos(angle) * r,
       center + Math.sin(angle) * r
     ];
   });
 
+  const glowIntensity = isPlaying ? 0.6 + Math.sin(glowPhase) * 0.4 : 0.3;
+
   return (
     <svg width={size} height={size} style={{ display: "block" }}>
+      <defs>
+        <linearGradient id="eqgrad" x1="0" y1="0" x2={size} y2={size} gradientUnits="userSpaceOnUse">
+          <stop stopColor="#6a82fb" />
+          <stop offset="1" stopColor="#fc5c7d" />
+        </linearGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+          <feMerge> 
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/> 
+          </feMerge>
+        </filter>
+      </defs>
+      <circle
+        cx={center}
+        cy={center}
+        r={base + amp}
+        fill="none"
+        stroke="url(#eqgrad)"
+        strokeWidth={size * 0.012}
+        opacity={glowIntensity}
+        filter="url(#glow)"
+      />
       <polygon
         points={points.map(p => p.join(",")).join(" ")}
         fill="none"
         stroke="url(#eqgrad)"
         strokeWidth={size * 0.012}
         strokeLinejoin="round"
+        strokeLinecap="round"
+        filter="url(#glow)"
       />
-      <defs>
-        <linearGradient id="eqgrad" x1="0" y1="0" x2={size} y2={size} gradientUnits="userSpaceOnUse">
-          <stop stopColor="#6a82fb" />
-          <stop offset="1" stopColor="#fc5c7d" />
-        </linearGradient>
-      </defs>
     </svg>
   );
 }
