@@ -1,83 +1,70 @@
 import React, { useRef, useState, useEffect } from "react";
 
-// SVG эквалайзер-волна вокруг аватарки
+// === SVG эквалайзер ===
 export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
   const [phase, setPhase] = useState(0);
   const [glowPhase, setGlowPhase] = useState(0);
   const [audioData, setAudioData] = useState(new Array(32).fill(0));
   const analyserRef = useRef(null);
   const dataArrayRef = useRef(null);
+  const animationRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const sourceRef = useRef(null);
+
   const center = size / 2;
   const base = size * 0.41;
   const amp = isPlaying ? size * 0.045 : 0;
 
   useEffect(() => {
     if (!isPlaying || !audioElement) {
-      // Очищаем данные при остановке
       setAudioData(new Array(32).fill(0));
       return;
     }
-    
-    // Проверяем, не создан ли уже контекст для этого элемента
-    if (audioElement._audioContextCreated) {
-      // Просто запускаем обновление данных
-      const updateAudioData = () => {
-        try {
-          if (analyserRef.current && dataArrayRef.current) {
-            analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-            setAudioData([...dataArrayRef.current]);
-            setPhase(p => p + 0.15);
-            setGlowPhase(g => g + 0.1);
-          }
-        } catch (e) {
-          console.warn('Error updating audio data:', e);
-        }
-      };
-      
-      const interval = setInterval(updateAudioData, 40);
-      return () => clearInterval(interval);
+
+    if (!audioContextRef.current) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = ctx.createAnalyser();
+        const source = ctx.createMediaElementSource(audioElement);
+        analyser.fftSize = 64;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        source.connect(analyser);
+        analyser.connect(ctx.destination);
+
+        audioContextRef.current = ctx;
+        analyserRef.current = analyser;
+        dataArrayRef.current = dataArray;
+        sourceRef.current = source;
+      } catch (err) {
+        console.error("AudioContext error:", err);
+        return;
+      }
     }
-    
-    try {
-      // Создаем анализатор аудио
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const analyser = audioContext.createAnalyser();
-      const source = audioContext.createMediaElementSource(audioElement);
-      
-      // Помечаем элемент как уже связанный с контекстом
-      audioElement._audioContextCreated = true;
-    
-      analyser.fftSize = 64;
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-      
-      source.connect(analyser);
-      analyser.connect(audioContext.destination);
-      
-      analyserRef.current = analyser;
-      dataArrayRef.current = dataArray;
-      
-      const updateAudioData = () => {
-        try {
-          if (analyserRef.current && dataArrayRef.current && audioContext.state !== 'closed') {
-            analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-            setAudioData([...dataArrayRef.current]);
-            setPhase(p => p + 0.15);
-            setGlowPhase(g => g + 0.1);
-          }
-        } catch (e) {
-          console.warn('Error updating audio data:', e);
-        }
-      };
-      
-      const interval = setInterval(updateAudioData, 40);
-      return () => {
-        clearInterval(interval);
-      };
-    } catch (e) {
-      console.warn('Error creating audio context:', e);
-      return;
-    }
+
+    const update = () => {
+      if (analyserRef.current && dataArrayRef.current) {
+        analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+        setAudioData([...dataArrayRef.current]);
+        setPhase(p => p + 0.15);
+        setGlowPhase(g => g + 0.1);
+      }
+      animationRef.current = requestAnimationFrame(update);
+    };
+
+    animationRef.current = requestAnimationFrame(update);
+
+    return () => {
+      cancelAnimationFrame(animationRef.current);
+      if (audioContextRef.current?.state !== "closed") {
+        audioContextRef.current.close();
+      }
+      analyserRef.current = null;
+      dataArrayRef.current = null;
+      audioContextRef.current = null;
+      sourceRef.current = null;
+    };
   }, [isPlaying, audioElement]);
 
   const points = Array.from({ length: 200 }).map((_, i) => {
@@ -91,7 +78,6 @@ export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
 
   const avgAudio = audioData.reduce((a, b) => a + b, 0) / audioData.length / 255;
   const glowIntensity = isPlaying ? 0.4 + avgAudio * 1.2 + Math.sin(glowPhase) * 0.3 : 0.4;
-  const innerGlowRadius = isPlaying ? base + amp + avgAudio * amp * 2 + (isPlaying ? Math.sin(phase + 1) * amp * 0.5 : 0) - size * 0.01 : base + size * 0.05;
   const colorPhase = Math.sin(glowPhase * 0.7 + avgAudio * 3) * 0.5 + 0.5;
 
   return (
@@ -109,9 +95,9 @@ export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
         </linearGradient>
         <filter id="glow">
           <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-          <feMerge> 
+          <feMerge>
             <feMergeNode in="coloredBlur"/>
-            <feMergeNode in="SourceGraphic"/> 
+            <feMergeNode in="SourceGraphic"/>
           </feMerge>
         </filter>
         <mask id="lineMask">
@@ -141,14 +127,12 @@ export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
   );
 }
 
-// Волновая форма (waveform)
+// === Волна ===
 function Waveform({ src, progress, onSeek }) {
-  const [peaks, setPeaks] = React.useState([]);
+  const [peaks, setPeaks] = useState([]);
 
   useEffect(() => {
-    const arr = Array.from({ length: 64 }, () =>
-      16 + Math.round(Math.random() * 32)
-    );
+    const arr = Array.from({ length: 64 }, () => 16 + Math.round(Math.random() * 32));
     setPeaks(arr);
   }, [src]);
 
@@ -163,7 +147,6 @@ function Waveform({ src, progress, onSeek }) {
         cursor: "pointer",
         gap: 1,
         userSelect: "none",
-
       }}
       onPointerDown={e => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -179,14 +162,12 @@ function Waveform({ src, progress, onSeek }) {
             width: 3,
             height: h,
             borderRadius: 2,
-            background:
-              i / peaks.length < progress
-                ? "linear-gradient(180deg, #6a82fb 0%, #fc5c7d 100%)"
-                : "#232526",
-            boxShadow:
-              i / peaks.length < progress
-                ? "0 0 6px #6a82fb88"
-                : "none",
+            background: i / peaks.length < progress
+              ? "linear-gradient(180deg, #6a82fb 0%, #fc5c7d 100%)"
+              : "#232526",
+            boxShadow: i / peaks.length < progress
+              ? "0 0 6px #6a82fb88"
+              : "none",
             transition: "background 0.2s",
           }}
         />
@@ -195,7 +176,8 @@ function Waveform({ src, progress, onSeek }) {
   );
 }
 
-export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPause,  onEnded, shouldPlay }) {
+// === Главный плеер ===
+export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPause, onEnded, shouldPlay }) {
   const audioRef = useRef();
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -205,150 +187,76 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
+
     const update = () => {
       setCurrent(audio.currentTime);
       setProgress(audio.duration ? audio.currentTime / audio.duration : 0);
     };
+
     audio.addEventListener("timeupdate", update);
     audio.addEventListener("loadedmetadata", () => setDuration(audio.duration));
-    
-    // Настройка Media Session API для фонового воспроизведения
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: 'CheckVibe Track',
-        artist: 'Unknown Artist',
-        artwork: [
-          { src: avatarUrl || '/vite.svg', sizes: '96x96', type: 'image/png' }
-        ]
-      });
-      
-      navigator.mediaSession.setActionHandler('play', () => {
-        if (audio && audio.paused) {
-          audio.play();
-          setIsPlaying(true);
-          if (onPlay) onPlay();
-        }
-      });
-      
-      navigator.mediaSession.setActionHandler('pause', () => {
-        if (audio && !audio.paused) {
-          audio.pause();
-          setIsPlaying(false);
-          if (onPause) onPause();
-        }
-      });
-    }
-    
-    // Отслеживание смены видимости страницы
-    const handleVisibilityChange = () => {
-      if (document.hidden && audio && !audio.paused) {
-        // При сворачивании приложения проверяем состояние
-        setTimeout(() => {
-          if (audio.paused && isPlaying) {
-            setIsPlaying(false);
-            if (onPause) onPause();
-          }
-        }, 100);
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+    audio.addEventListener("ended", () => {
+      setIsPlaying(false);
+      if (onEnded) onEnded();
+    });
+
     return () => {
       audio.removeEventListener("timeupdate", update);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [avatarUrl]);
+  }, [onEnded]);
 
-  const handleWaveformSeek = (percent) => {
+  useEffect(() => {
+    if (shouldPause && isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      if (onPause) onPause();
+    }
+  }, [shouldPause]);
+
+  useEffect(() => {
+    if (shouldPlay && !isPlaying) {
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+        if (onPlay) onPlay();
+      }).catch(e => {
+        console.warn('Autoplay blocked', e);
+      });
+    }
+  }, [shouldPlay]);
+
+  const handleAvatarClick = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.currentTime = percent * duration;
-    setProgress(percent);
-  };
 
-  const fmt = (s) => {
-    if (!isFinite(s)) return "0:00";
-    const m = Math.floor(s / 60);
-    const ss = Math.floor(s % 60);
-    return `${m}:${ss < 10 ? "0" : ""}${ss}`;
-  };
-
-  // Play/Pause по тапу на аватарку
-  const handleAvatarClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const audio = audioRef.current;
-    if (!audio) return;
-    
     if (isPlaying) {
       audio.pause();
       setIsPlaying(false);
       if (onPause) onPause();
     } else {
-      // Для iOS нужно пользовательское взаимодействие
-      const playPromise = audio.play();
-      if (playPromise) {
-        playPromise.catch(e => {
-          console.warn('Error playing audio:', e);
-        });
-      }
-      setIsPlaying(true);
-      if (onPlay) onPlay();
+      audio.play().then(() => {
+        setIsPlaying(true);
+        if (onPlay) onPlay();
+      }).catch(e => {
+        console.warn("Playback failed:", e);
+      });
     }
   };
 
-  useEffect(() => {
+  const handleSeek = (percent) => {
     const audio = audioRef.current;
-    if (!audio) return;
-    if (!isPlaying) audio.pause();
-  }, [isPlaying]);
+    if (!audio || !duration) return;
+    audio.currentTime = percent * duration;
+    setProgress(percent);
+  };
 
-  useEffect(() => {
-    if (shouldPause && isPlaying) {
-      const audio = audioRef.current;
-      if (audio) {
-        audio.pause();
-        setIsPlaying(false);
-        if (onPause) onPause();
-      }
-    }
-  }, [shouldPause, isPlaying, onPause]);
-
-  useEffect(() => {
-    if (shouldPlay && !isPlaying) {
-      const audio = audioRef.current;
-      if (audio) {
-        // Для iOS нужно взаимодействие пользователя для автопроигрывания
-        audio.play().catch(e => {
-          console.warn('Autoplay prevented:', e);
-          // Не меняем состояние если автопроигрывание заблокировано
-          return;
-        });
-        setIsPlaying(true);
-        if (onPlay) onPlay();
-      }
-    }
-  }, [shouldPlay, isPlaying, onPlay]);
+  const fmt = s => isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : "0:00";
 
   return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      marginBottom: 10,
-      width: 200,
-      margin: "0 auto"
-    }}>
-      <div style={{ position: "relative", width: 200, height: 200, marginBottom: 8 }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 200, margin: "0 auto" }}>
+      <div style={{ position: "relative", width: 200, height: 200 }}>
         <img
           src={avatarUrl || "/vite.svg"}
           alt="avatar"
-          onTouchEnd={(e) => {
-            e.preventDefault();
-            handleAvatarClick(e);
-          }}
           onClick={handleAvatarClick}
           style={{
             width: 80,
@@ -359,33 +267,28 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
               ? "0 0 32px #fc5c7d, 0 0 16px #6a82fb"
               : "0 0 32px #fc5c7d55",
             position: "absolute",
-            top: 60, left: 60,
+            top: 60,
+            left: 60,
             zIndex: 2,
             cursor: "pointer",
-            transition: "box-shadow 0.2s",
-pointerEvents: "auto"
+            transition: "box-shadow 0.2s"
           }}
         />
-        {/* Полупрозрачная иконка play поверх аватарки */}
         {!isPlaying && (
-          <div
-            style={{
-              position: "absolute",
-              top: 100 - 28,
-              left: 100 - 28,
-              width: 56,
-              height: 56,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "rgba(36,37,44,0.18)",
-              borderRadius: "50%",
-              zIndex: 3,
-              pointerEvents: "none",
-              transition: "opacity 0.25s",
-              opacity: 1
-            }}
-          >
+          <div style={{
+            position: "absolute",
+            top: 72,
+            left: 72,
+            width: 56,
+            height: 56,
+            background: "rgba(36,37,44,0.18)",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 3,
+            pointerEvents: "none"
+          }}>
             <svg width="38" height="38" viewBox="0 0 38 38" style={{ opacity: 0.7 }}>
               <circle cx="19" cy="19" r="19" fill="#232526" opacity="0.18" />
               <polygon points="14,10 30,19 14,28" fill="#fff" opacity="0.85" />
@@ -394,27 +297,18 @@ pointerEvents: "auto"
         )}
         <AvatarEqualizer isPlaying={isPlaying} size={200} audioElement={audioRef.current} />
       </div>
+
       <audio
         ref={audioRef}
         src={src}
         preload="metadata"
         playsInline
         crossOrigin="anonymous"
-        onEnded={() => {
-          setIsPlaying(false);
-          if (onEnded) onEnded();
-        }}
-        onError={() => {
-          setIsPlaying(false);
-          setProgress(0);
-          setDuration(0);
-          setCurrent(0);  
-        }}
         style={{ display: "none" }}
       />
-      {/* Волна */}
-      <Waveform src={src} progress={progress} onSeek={handleWaveformSeek} />
-      {/* Время под волной */}
+
+      <Waveform src={src} progress={progress} onSeek={handleSeek} />
+
       <div style={{
         color: "#b3b3b3",
         fontSize: "0.97em",
@@ -426,5 +320,5 @@ pointerEvents: "auto"
         {fmt(current)} / {fmt(duration)}
       </div>
     </div>
-    );
+  );
 }
