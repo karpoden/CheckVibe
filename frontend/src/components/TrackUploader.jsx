@@ -10,6 +10,8 @@ export default function TrackUploader() {
   // const [telegramId, setTelegramId] = useState('');
   const [audio, setAudio] = useState(null);
   const [message, setMessage] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
 
   // useEffect(() => {
@@ -24,10 +26,6 @@ export default function TrackUploader() {
   const handleUpload = async (e) => {
     e.preventDefault();
 
-    console.log('telegramId:', telegramId);
-    console.log('title:', title);
-    console.log('audio:', audio);
-
     if (!audio?.type.startsWith('audio/')) {
       setMessage('❌ Пожалуйста, выберите аудиофайл');
       return;
@@ -37,6 +35,18 @@ export default function TrackUploader() {
       return;
     }
 
+    setIsUploading(true);
+    setUploadProgress(0);
+    setMessage('');
+
+    // Simulate progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 90) return prev;
+        return prev + Math.random() * 15;
+      });
+    }, 200);
+
     const formData = new FormData();
     formData.append('title', title);
     formData.append('telegramId', telegramId);
@@ -44,12 +54,20 @@ export default function TrackUploader() {
 
     try {
       await uploadTrack(formData);
-      setMessage('✅ Трек загружен');
-      setTitle('');
-      // setTelegramId(telegramId);
-      setAudio(null);
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      setTimeout(() => {
+        setMessage('✅ Трек загружен');
+        setTitle('');
+        setAudio(null);
+        setIsUploading(false);
+        setUploadProgress(0);
+      }, 500);
     } catch (err) {
+      clearInterval(progressInterval);
       setMessage('❌ Ошибка при загрузке');
+      setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -106,13 +124,42 @@ export default function TrackUploader() {
         required
         style={inputStyle}
       />
+      {isUploading && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{
+            width: "100%",
+            height: 8,
+            background: "#232526",
+            borderRadius: 4,
+            overflow: "hidden",
+            marginBottom: 8
+          }}>
+            <div style={{
+              width: `${uploadProgress}%`,
+              height: "100%",
+              background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
+              borderRadius: 4,
+              transition: "width 0.3s ease",
+              boxShadow: "0 0 8px #6a82fb44"
+            }} />
+          </div>
+          <p style={{ color: "#6a82fb", fontSize: "0.9em", textAlign: "center", margin: 0 }}>
+            Загрузка... {Math.round(uploadProgress)}%
+          </p>
+        </div>
+      )}
       <motion.button 
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: isUploading ? 1 : 1.05 }}
+        whileTap={{ scale: isUploading ? 1 : 0.95 }}
         type="submit" 
-        style={buttonStyle}
+        disabled={isUploading}
+        style={{
+          ...buttonStyle,
+          opacity: isUploading ? 0.6 : 1,
+          cursor: isUploading ? "not-allowed" : "pointer"
+        }}
       >
-        Загрузить
+        {isUploading ? "Загружается..." : "Загрузить"}
       </motion.button>
       {message && <p style={{ color: "#fff", marginTop: 8, textAlign: "center" }}>{message}</p>}
     </form>
