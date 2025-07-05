@@ -12,10 +12,31 @@ export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
   const amp = isPlaying ? size * 0.045 : 0;
 
   useEffect(() => {
-    if (!isPlaying || !audioElement) return;
+    if (!isPlaying || !audioElement) {
+      // Очищаем данные при остановке
+      setAudioData(new Array(32).fill(0));
+      return;
+    }
     
     // Проверяем, не создан ли уже контекст для этого элемента
-    if (audioElement._audioContextCreated) return;
+    if (audioElement._audioContextCreated) {
+      // Просто запускаем обновление данных
+      const updateAudioData = () => {
+        try {
+          if (analyserRef.current && dataArrayRef.current) {
+            analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+            setAudioData([...dataArrayRef.current]);
+            setPhase(p => p + 0.15);
+            setGlowPhase(g => g + 0.1);
+          }
+        } catch (e) {
+          console.warn('Error updating audio data:', e);
+        }
+      };
+      
+      const interval = setInterval(updateAudioData, 40);
+      return () => clearInterval(interval);
+    }
     
     try {
       // Создаем анализатор аудио
@@ -26,43 +47,32 @@ export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
       // Помечаем элемент как уже связанный с контекстом
       audioElement._audioContextCreated = true;
     
-    analyser.fftSize = 64;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    
-    source.connect(analyser);
-    analyser.connect(audioContext.destination);
-    
-    analyserRef.current = analyser;
-    dataArrayRef.current = dataArray;
-    
-    const updateAudioData = () => {
-      try{
-        if (analyserRef.current && dataArrayRef.current && audioContext.state !== 'closed') {
-          analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-          setAudioData([...dataArrayRef.current]);
-          setPhase(p => p + 0.15);
-          setGlowPhase(g => g + 0.1);
+      analyser.fftSize = 64;
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
+      
+      analyserRef.current = analyser;
+      dataArrayRef.current = dataArray;
+      
+      const updateAudioData = () => {
+        try {
+          if (analyserRef.current && dataArrayRef.current && audioContext.state !== 'closed') {
+            analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+            setAudioData([...dataArrayRef.current]);
+            setPhase(p => p + 0.15);
+            setGlowPhase(g => g + 0.1);
+          }
+        } catch (e) {
+          console.warn('Error updating audio data:', e);
         }
-      }
-      catch (e) {
-        console.warn('Error updating audio data:', e);
-      }
-    };
-    
+      };
+      
       const interval = setInterval(updateAudioData, 40);
       return () => {
         clearInterval(interval);
-        try {
-          if (audioContext.state !== 'closed') { 
-            audioContext.close();
-          }
-          if (audioElement) {
-            audioElement._audioContextCreated = false;
-          }
-        } catch (e) {
-          console.warn('Error closing audio context:', e);
-        }
       };
     } catch (e) {
       console.warn('Error creating audio context:', e);
