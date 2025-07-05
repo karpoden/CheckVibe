@@ -269,39 +269,19 @@ export default function RandomPlayer() {
                     <Star size={20} fill="#fff700" color="#fff700" />
                   </motion.button>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 34, marginBottom: 8 }}>
-                  <h2 style={{
-                    fontSize: "1.7em",
-                    fontWeight: 700,
-                    letterSpacing: "0.01em",
-                    color: theme === 'peach' ? "#2c3e50" : "#fff",
-                    textShadow: theme === 'peach' ? "0 1px 3px rgba(255,255,255,0.3)" : "0 2px 12px #6a82fb66",
-                    zIndex: 2,
-                    position: "relative",
-                    margin: 0
-                  }}>
-                    {track.title}
-                  </h2>
-                  <a
-                    href="https://t.me/dankarp"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      color: "#6a82fb",
-                      fontSize: "0.9em",
-                      textDecoration: "none",
-                      fontWeight: 500,
-                      opacity: 0.8,
-                      transition: "opacity 0.2s",
-                      zIndex: 2,
-                      position: "relative"
-                    }}
-                    onMouseEnter={(e) => e.target.style.opacity = 1}
-                    onMouseLeave={(e) => e.target.style.opacity = 0.8}
-                  >
-                    @dankarp
-                  </a>
-                </div>
+                <h2 style={{
+                  fontSize: "1.7em",
+                  fontWeight: 700,
+                  marginBottom: 8,
+                  letterSpacing: "0.01em",
+                  color: "#fff",
+                  textShadow: "0 2px 12px #6a82fb66",
+                  marginTop: 34,
+                  zIndex: 2,
+                  position: "relative"
+                }}>
+                  {track.title}
+                </h2>
                 <TrackPlayer
                   src={track.fileUrl}
                   avatarUrl={"/vite.svg"}
