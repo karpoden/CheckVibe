@@ -330,11 +330,8 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
         <img
           src={avatarUrl || "/vite.svg"}
           alt="avatar"
+          onTouchEnd={handleAvatarClick}
           onClick={handleAvatarClick}
-          onTouchStart={(e) => {
-            e.preventDefault();
-            handleAvatarClick();
-          }}
           style={{
             width: 80,
             height: 80,
