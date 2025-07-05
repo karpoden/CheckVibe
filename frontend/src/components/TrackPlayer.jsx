@@ -221,10 +221,42 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
           { src: avatarUrl || '/vite.svg', sizes: '96x96', type: 'image/png' }
         ]
       });
+      
+      navigator.mediaSession.setActionHandler('play', () => {
+        if (audio && audio.paused) {
+          audio.play();
+          setIsPlaying(true);
+          if (onPlay) onPlay();
+        }
+      });
+      
+      navigator.mediaSession.setActionHandler('pause', () => {
+        if (audio && !audio.paused) {
+          audio.pause();
+          setIsPlaying(false);
+          if (onPause) onPause();
+        }
+      });
     }
+    
+    // Отслеживание смены видимости страницы
+    const handleVisibilityChange = () => {
+      if (document.hidden && audio && !audio.paused) {
+        // При сворачивании приложения проверяем состояние
+        setTimeout(() => {
+          if (audio.paused && isPlaying) {
+            setIsPlaying(false);
+            if (onPause) onPause();
+          }
+        }, 100);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
       audio.removeEventListener("timeupdate", update);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [avatarUrl]);
 
@@ -298,7 +330,11 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
         <img
           src={avatarUrl || "/vite.svg"}
           alt="avatar"
-          onPointerDown={handleAvatarClick}
+          onClick={handleAvatarClick}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            handleAvatarClick();
+          }}
           style={{
             width: 80,
             height: 80,
@@ -346,7 +382,9 @@ pointerEvents: "auto"
       <audio
         ref={audioRef}
         src={src}
-        preload="auto"
+        preload="metadata"
+        playsInline
+        crossOrigin="anonymous"
         onEnded={() => {
           setIsPlaying(false);
           if (onEnded) onEnded();
@@ -356,7 +394,7 @@ pointerEvents: "auto"
           setProgress(0);
           setDuration(0);
           setCurrent(0);  
-  }}
+        }}
         style={{ display: "none" }}
       />
       {/* Волна */}
