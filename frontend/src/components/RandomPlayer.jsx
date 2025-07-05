@@ -16,6 +16,7 @@ export default function RandomPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState(null);
   const tinderCardRef = useRef();
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const fetchMyCoins = async () => {
     try {
@@ -32,6 +33,7 @@ export default function RandomPlayer() {
       const res = await getRandomTrack(telegramId);
       setTrack(res.data);
       setNoTracks(false);
+      setSwipeDirection(null);
     } catch (err) {
       if (err.response?.status === 404 && err.response.data?.canReset) {
         setNoTracks(true);
@@ -46,6 +48,9 @@ export default function RandomPlayer() {
   };
 
   const handleSwipe = async (direction) => {
+    if (isAnimating) return;
+    
+    setIsAnimating(true);
     setSwipeDirection(direction);
     
     try {
@@ -59,19 +64,20 @@ export default function RandomPlayer() {
       console.error(err);
     }
     
-    // Задержка для анимации перед загрузкой нового трека
-    await new Promise(resolve => setTimeout(resolve, 300));
-    await fetchTrack();
+    // Ждем завершения анимации перед загрузкой нового трека
+    setTimeout(() => {
+      fetchTrack().finally(() => setIsAnimating(false));
+    }, 300);
   };
 
-  const handleLike = async () => {
-    if (tinderCardRef.current) {
+  const handleLike = () => {
+    if (tinderCardRef.current && !isAnimating) {
       tinderCardRef.current.swipe('right');
     }
   };
 
-  const handleDislike = async () => {
-    if (tinderCardRef.current) {
+  const handleDislike = () => {
+    if (tinderCardRef.current && !isAnimating) {
       tinderCardRef.current.swipe('left');
     }
   };
@@ -82,7 +88,7 @@ export default function RandomPlayer() {
   };
 
   const handleDonate = async () => {
-    if (!track || myCoins < 5) return;
+    if (!track || myCoins < 5 || isAnimating) return;
     
     try {
       await likeTrack(track.id, telegramId);
@@ -133,26 +139,6 @@ export default function RandomPlayer() {
       y: -20,
       transition: { duration: 0.2 }
     }
-  };
-
-  const cardVariants = {
-    hidden: (direction) => ({
-      x: direction === 'right' ? 300 : direction === 'left' ? -300 : 0,
-      opacity: 0,
-      rotate: direction === 'right' ? 30 : direction === 'left' ? -30 : 0,
-    }),
-    visible: {
-      x: 0,
-      opacity: 1,
-      rotate: 0,
-      transition: { duration: 0.3 }
-    },
-    exit: (direction) => ({
-      x: direction === 'right' ? 300 : direction === 'left' ? -300 : 0,
-      opacity: 0,
-      rotate: direction === 'right' ? 30 : direction === 'left' ? -30 : 0,
-      transition: { duration: 0.3 }
-    })
   };
 
   return (
@@ -244,15 +230,11 @@ export default function RandomPlayer() {
               onSwipe={handleSwipe}
               preventSwipe={['up', 'down']}
               ref={tinderCardRef}
-              swipeThreshold={100}
+              swipeThreshold={50}
               flickOnSwipe={true}
+              onCardLeftScreen={() => {}}
             >
-              <motion.div
-                custom={swipeDirection}
-                variants={cardVariants}
-                initial="visible"
-                animate="visible"
-                exit="exit"
+              <div
                 style={{
                   background: "rgba(30,32,40,0.95)",
                   padding: 28,
@@ -320,7 +302,7 @@ export default function RandomPlayer() {
                 <p style={{ fontSize: "0.8em", color: "#b3b3b3", zIndex: 2, position: "relative" }}>
                   Свайпайте → или используйте кнопки ниже
                 </p>
-              </motion.div>
+              </div>
             </TinderCard>
             <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
               <motion.button
