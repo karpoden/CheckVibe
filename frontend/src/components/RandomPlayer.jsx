@@ -298,7 +298,7 @@ export default function RandomPlayer() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ 
                   scale: 0.85,
-                  boxShadow: "0 0 20px #fc5c7d",
+                  backgroundColor: "#fc5c7d",
                   transition: { duration: 0.1 }
                 }}
                 onClick={handleDislike}
@@ -319,14 +319,14 @@ export default function RandomPlayer() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ 
                   scale: 0.85,
-                  boxShadow: "0 0 20px #6a82fb",
+                  backgroundColor: "#6a82fb",
                   transition: { duration: 0.1 }
                 }}
                 onClick={handleLike}
                 style={{
-                  background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
+                  background: "#232526",
                   color: "#fff",
-                  border: "none",
+                  border: "1.5px solid #6a82fb88",
                   padding: "12px 28px",
                   borderRadius: "8px",
                   fontWeight: "bold",
