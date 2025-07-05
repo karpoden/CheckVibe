@@ -30,22 +30,33 @@ export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
     dataArrayRef.current = dataArray;
     
     const updateAudioData = () => {
-      if (analyserRef.current && dataArrayRef.current) {
-        analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-        setAudioData([...dataArrayRef.current]);
-        setPhase(p => p + 0.15);
-        setGlowPhase(g => g + 0.1);
+      try{
+        if (analyserRef.current && dataArrayRef.current && audioContext.state !== 'closed') {
+          analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+          setAudioData([...dataArrayRef.current]);
+          setPhase(p => p + 0.15);
+          setGlowPhase(g => g + 0.1);
+        }
+      }
+      catch (e) {
+        console.warn('Error updating audio data:', e);
       }
     };
     
     const interval = setInterval(updateAudioData, 40);
     return () => {
       clearInterval(interval);
-      audioContext.close();
+      try {
+        if (audioContext.state !== 'closed') { 
+          audioContext.close();
+        }
+      } catch (e) {
+        console.warn('Error closing audio context:', e);
+      }
     };
   }, [isPlaying, audioElement]);
 
-  const points = Array.from({ length: 400 }).map((_, i) => {
+  const points = Array.from({ length: 201 }).map((_, i) => {
     const angle = (i / 200) * 2 * Math.PI;
     const r = base + amp + (isPlaying ? Math.sin(phase + i / 4) * amp : 0);
     return [
@@ -160,7 +171,7 @@ function Waveform({ src, progress, onSeek }) {
   );
 }
 
-export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPause }) {
+export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPause,  onEnded, shouldPlay }) {
   const audioRef = useRef();
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -227,6 +238,17 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
     }
   }, [shouldPause, isPlaying, onPause]);
 
+  useEffect(() => {
+  if (shouldPlay && !isPlaying) {
+      const audio = audioRef.current;
+      if (audio) {
+        audio.play();
+        setIsPlaying(true);
+        if (onPlay) onPlay();
+      }
+    }
+  }, [shouldPlay, isPlaying, onPlay]);
+
   return (
     <div style={{
       display: "flex",
@@ -289,7 +311,10 @@ pointerEvents: "auto"
         ref={audioRef}
         src={src}
         preload="auto"
-        onEnded={() => setIsPlaying(false)}
+        onEnded={() => {
+          setIsPlaying(false);
+          if (onEnded) onEnded();
+        }}
         onError={() => {
           setIsPlaying(false);
           setProgress(0);

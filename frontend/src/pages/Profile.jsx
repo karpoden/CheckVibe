@@ -20,6 +20,8 @@ export default function Profile() {
   const [actionMsg, setActionMsg] = useState("");
   const [promoteAmounts, setPromoteAmounts] = useState({}); // { [trackId]: value }
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null); // ID текущего играющего трека
+  const [autoplay, setAutoplay] = useState(false);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const location = useLocation();
 
   // Получить баланс и треки пользователя
@@ -116,14 +118,45 @@ export default function Profile() {
   }
   return (
     <div style={{ maxWidth: 420, margin: "0 auto", padding: 24, paddingBottom: 120 }}>
-      <h2 style={{
-        color: "#fff",
-        fontWeight: 700,
-        fontSize: "1.3em",
-        marginBottom: 18,
-        textShadow: "0 2px 12px #6a82fb66"
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 18
       }}>
-      </h2>
+        <h2 style={{
+          color: "#fff",
+          fontWeight: 700,
+          fontSize: "1.3em",
+          textShadow: "0 2px 12px #6a82fb66",
+          margin: 0
+        }}>
+          Мои треки
+        </h2>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+          <span style={{ color: "#fff", fontSize: "0.9em" }}>Автопроигрывание</span>
+          <div style={{
+            width: 40,
+            height: 20,
+            background: autoplay ? "#6a82fb" : "#444",
+            borderRadius: 10,
+            position: "relative",
+            cursor: "pointer",
+            transition: "background 0.2s"
+          }} onClick={() => setAutoplay(!autoplay)}>
+            <div style={{
+              width: 16,
+              height: 16,
+              background: "#fff",
+              borderRadius: "50%",
+              position: "absolute",
+              top: 2,
+              left: autoplay ? 22 : 2,
+              transition: "left 0.2s"
+            }} />
+          </div>
+        </label>
+      </div>
       <div style={{
         background: "rgba(36,37,44,0.85)",
         borderRadius: 10,
@@ -150,7 +183,7 @@ export default function Profile() {
           textAlign: "center"
         }}>{actionMsg}</div>
       )}
-      <h3 style={{ color: "#fff", marginBottom: 12, fontWeight: 600 }}>Мои треки</h3>
+
       {loading ? (
         <div style={{ color: "#fff" }}>Загрузка...</div>
       ) : tracks.length === 0 ? (
@@ -176,9 +209,22 @@ export default function Profile() {
                   <TrackPlayer
                     src={track.fileUrl}
                     avatarUrl={"/vite.svg"}
-                    onPlay={() => setCurrentlyPlaying(track.id)}
+                    onPlay={() => {
+                      setCurrentlyPlaying(track.id);
+                      setCurrentTrackIndex(tracks.findIndex(t => t.id === track.id));
+                    }}
                     onPause={() => setCurrentlyPlaying(null)}
+                    onEnded={() => {
+                      if (autoplay && currentTrackIndex < tracks.length - 1) {
+                        const nextIndex = currentTrackIndex + 1;
+                        setCurrentTrackIndex(nextIndex);
+                        setCurrentlyPlaying(tracks[nextIndex].id);
+                      } else {
+                        setCurrentlyPlaying(null);
+                      }
+                    }}
                     shouldPause={currentlyPlaying !== null && currentlyPlaying !== track.id}
+                    shouldPlay={autoplay && currentlyPlaying === track.id}
                   />
                 </div>
                 <div style={{ 
