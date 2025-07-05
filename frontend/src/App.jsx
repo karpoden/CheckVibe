@@ -42,6 +42,7 @@ export default function App() {
         console.log('Setting theme:', newTheme);
         setTheme(newTheme);
         document.body.className = newTheme === 'peach' ? 'peach-theme' : '';
+        console.log('Body className:', document.body.className);
       }, 100);
       
       // Слушаем изменения темы
@@ -51,6 +52,7 @@ export default function App() {
         const updatedTheme = newIsDark ? 'dark' : 'peach';
         setTheme(updatedTheme);
         document.body.className = updatedTheme === 'peach' ? 'peach-theme' : '';
+        console.log('Theme changed to:', updatedTheme, 'Body class:', document.body.className);
       });
     } else {
       console.log('Telegram WebApp not available');

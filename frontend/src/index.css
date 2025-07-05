@@ -55,7 +55,7 @@ body {
 }
 
 body.peach-theme {
-  background: linear-gradient(135deg, #FFEAA7 0%, #FDCB6E 100%);
+  background: linear-gradient(135deg, #FFEAA7 0%, #FDCB6E 100%) !important;
 }
 
 body::before {
