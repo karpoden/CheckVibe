@@ -5,19 +5,16 @@ import { getRandomTrack, likeTrack, donateTrack, getUser, dislikeTrack } from '.
 import { motion, AnimatePresence } from "framer-motion";
 import TrackPlayer from "./TrackPlayer";
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
 import { Star } from 'lucide-react';
 
 export default function RandomPlayer() {
   const [track, setTrack] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [myCoins, setMyCoins] = useState(0);
-  const cardRef = useRef();
   const [noTracks, setNoTracks] = useState(false);
   const { telegramId } = useOutletContext();
   const [isPlaying, setIsPlaying] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState(null);
-  const [isSwiping, setIsSwiping] = useState(false);
   const tinderCardRef = useRef();
 
   const fetchMyCoins = async () => {
@@ -35,7 +32,6 @@ export default function RandomPlayer() {
       const res = await getRandomTrack(telegramId);
       setTrack(res.data);
       setNoTracks(false);
-      setSwipeDirection(null);
     } catch (err) {
       if (err.response?.status === 404 && err.response.data?.canReset) {
         setNoTracks(true);
@@ -49,43 +45,34 @@ export default function RandomPlayer() {
     }
   };
 
-  const swipeAnimation = async (direction) => {
-    setIsSwiping(true);
+  const handleSwipe = async (direction) => {
     setSwipeDirection(direction);
-    await new Promise(resolve => setTimeout(resolve, 300));
-    setIsSwiping(false);
-  };
-
-  const handleRate = async (direction, apiCall) => {
-    if (!track || isSwiping) return;
-    
-    // Программный свайп карточки
-    if (tinderCardRef.current) {
-      tinderCardRef.current.swipe(direction);
-    }
     
     try {
-      await apiCall(track.id, telegramId);
+      if (direction === 'right') {
+        await likeTrack(track.id, telegramId);
+      } else if (direction === 'left') {
+        await dislikeTrack(track.id, telegramId);
+      }
       await fetchMyCoins();
     } catch (err) {
       console.error(err);
     }
+    
+    // Задержка для анимации перед загрузкой нового трека
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await fetchTrack();
   };
 
-  const handleLike = () => handleRate('right', likeTrack);
-  const handleDislike = () => handleRate('left', dislikeTrack);
+  const handleLike = async () => {
+    if (tinderCardRef.current) {
+      tinderCardRef.current.swipe('right');
+    }
+  };
 
-  const handleSwipe = async (direction) => {
-    if (direction === 'right') {
-      await swipeAnimation('right');
-      await likeTrack(track.id, telegramId);
-      await fetchMyCoins();
-      await fetchTrack();
-    } else if (direction === 'left') {
-      await swipeAnimation('left');
-      await dislikeTrack(track.id, telegramId);
-      await fetchMyCoins();
-      await fetchTrack();
+  const handleDislike = async () => {
+    if (tinderCardRef.current) {
+      tinderCardRef.current.swipe('left');
     }
   };
 
@@ -95,9 +82,7 @@ export default function RandomPlayer() {
   };
 
   const handleDonate = async () => {
-    if (!track || myCoins < 5 || isSwiping) return;
-    
-    await swipeAnimation('right');
+    if (!track || myCoins < 5) return;
     
     try {
       await likeTrack(track.id, telegramId);
@@ -261,7 +246,6 @@ export default function RandomPlayer() {
               ref={tinderCardRef}
               swipeThreshold={100}
               flickOnSwipe={true}
-              onCardLeftScreen={() => {}}
             >
               <motion.div
                 custom={swipeDirection}
