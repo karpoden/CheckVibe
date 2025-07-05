@@ -18,7 +18,7 @@ export default function FooterNav() {
     border: active
       ? "none"
       : "1.5px solid #fc5c7d88",
-    padding: "10px 10px 21px 10px",
+    padding: "10px 10px 10px 10px",
     borderRadius: "12px",
     fontWeight: "bold",
     fontSize: "1.25em",
@@ -40,7 +40,7 @@ export default function FooterNav() {
       justifyContent: "center",
       alignItems: "center",
       gap: "20px",
-      padding: "10px 10px 21px 10px",
+      padding: "20px 10px 20px 10px",
       position: "fixed", // Фиксированное позиционирование
       bottom: "0",       // Прижимаем к низу
       left: "0",         // На всю ширину
