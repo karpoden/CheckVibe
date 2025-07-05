@@ -95,7 +95,7 @@ function Waveform({ src, progress, onSeek }) {
   );
 }
 
-export default function TrackPlayer({ src, avatarUrl }) {
+export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPause }) {
   const audioRef = useRef();
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -137,9 +137,11 @@ export default function TrackPlayer({ src, avatarUrl }) {
     if (isPlaying) {
       audio.pause();
       setIsPlaying(false);
+      if (onPause) onPause();
     } else {
       audio.play();
       setIsPlaying(true);
+      if (onPlay) onPlay();
     }
   };
 
@@ -148,6 +150,17 @@ export default function TrackPlayer({ src, avatarUrl }) {
     if (!audio) return;
     if (!isPlaying) audio.pause();
   }, [isPlaying]);
+
+  useEffect(() => {
+    if (shouldPause && isPlaying) {
+      const audio = audioRef.current;
+      if (audio) {
+        audio.pause();
+        setIsPlaying(false);
+        if (onPause) onPause();
+      }
+    }
+  }, [shouldPause, isPlaying, onPause]);
 
   return (
     <div style={{

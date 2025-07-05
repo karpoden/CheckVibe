@@ -19,6 +19,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [actionMsg, setActionMsg] = useState("");
   const [promoteAmounts, setPromoteAmounts] = useState({}); // { [trackId]: value }
+  const [currentlyPlaying, setCurrentlyPlaying] = useState(null); // ID текущего играющего трека
   const location = useLocation();
 
   // Получить баланс и треки пользователя
@@ -176,6 +177,9 @@ export default function Profile() {
                   <TrackPlayer
                     src={track.fileUrl}
                     avatarUrl={"/vite.svg"}
+                    onPlay={() => setCurrentlyPlaying(track.id)}
+                    onPause={() => setCurrentlyPlaying(null)}
+                    shouldPause={currentlyPlaying !== null && currentlyPlaying !== track.id}
                   />
                 </div>
                 <div style={{ 
