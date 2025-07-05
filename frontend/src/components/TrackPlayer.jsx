@@ -1,34 +1,66 @@
 import React, { useRef, useState, useEffect } from "react";
 
 // SVG эквалайзер-волна вокруг аватарки
-export function AvatarEqualizer({ isPlaying, size = 200 }) {
+export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
   const [phase, setPhase] = useState(0);
   const [glowPhase, setGlowPhase] = useState(0);
+  const [audioData, setAudioData] = useState(new Array(32).fill(0));
+  const analyserRef = useRef(null);
+  const dataArrayRef = useRef(null);
   const center = size / 2;
   const base = size * 0.41;
   const amp = isPlaying ? size * 0.045 : 0;
 
   useEffect(() => {
-    if (!isPlaying) return;
-    const interval = setInterval(() => {
-      setPhase(p => p + 0.15);
-      setGlowPhase(g => g + 0.1);
-    }, 40);
-    return () => clearInterval(interval);
-  }, [isPlaying]);
+    if (!isPlaying || !audioElement) return;
+    
+    // Создаем анализатор аудио
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+    const source = audioContext.createMediaElementSource(audioElement);
+    
+    analyser.fftSize = 64;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
+    
+    analyserRef.current = analyser;
+    dataArrayRef.current = dataArray;
+    
+    const updateAudioData = () => {
+      if (analyserRef.current && dataArrayRef.current) {
+        analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+        setAudioData([...dataArrayRef.current]);
+        setPhase(p => p + 0.15);
+        setGlowPhase(g => g + 0.1);
+      }
+    };
+    
+    const interval = setInterval(updateAudioData, 40);
+    return () => {
+      clearInterval(interval);
+      audioContext.close();
+    };
+  }, [isPlaying, audioElement]);
 
   const points = Array.from({ length: 200 }).map((_, i) => {
     const angle = (i / 200) * 2 * Math.PI;
-    const r = base + amp + (isPlaying ? Math.sin(phase + i / 4) * amp : 0);
+    const audioIndex = Math.floor((i / 200) * audioData.length);
+    const audioValue = audioData[audioIndex] / 255;
+    const dynamicAmp = isPlaying ? (amp + audioValue * amp * 2) : 0;
+    const r = base + dynamicAmp + (isPlaying ? Math.sin(phase + i / 4) * amp * 0.5 : 0);
     return [
       center + Math.cos(angle) * r,
       center + Math.sin(angle) * r
     ];
   });
 
-  const glowIntensity = isPlaying ? 0.8 + Math.sin(glowPhase) * 0.6 : 0.4;
-  const innerGlowRadius = isPlaying ? base + amp + (isPlaying ? Math.sin(phase + 1) * amp * 0.5 : 0) - size * 0.01 : base + size * 0.05;
-  const colorPhase = Math.sin(glowPhase * 0.7) * 0.5 + 0.5;
+  const avgAudio = audioData.reduce((a, b) => a + b, 0) / audioData.length / 255;
+  const glowIntensity = isPlaying ? 0.4 + avgAudio * 1.2 + Math.sin(glowPhase) * 0.3 : 0.4;
+  const innerGlowRadius = isPlaying ? base + amp + avgAudio * amp * 2 + (isPlaying ? Math.sin(phase + 1) * amp * 0.5 : 0) - size * 0.01 : base + size * 0.05;
+  const colorPhase = Math.sin(glowPhase * 0.7 + avgAudio * 3) * 0.5 + 0.5;
 
   return (
     <svg width={size} height={size} style={{ display: "block", overflow: "visible" }}>
@@ -254,7 +286,7 @@ pointerEvents: "auto"
             </svg>
           </div>
         )}
-        <AvatarEqualizer isPlaying={isPlaying} size={200} />
+        <AvatarEqualizer isPlaying={isPlaying} size={200} audioElement={audioRef.current} />
       </div>
       <audio
         ref={audioRef}
