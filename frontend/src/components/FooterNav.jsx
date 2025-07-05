@@ -40,14 +40,14 @@ export default function FooterNav() {
       justifyContent: "center",
       alignItems: "center",
       gap: "20px",
-      padding: "0px 10px 10px 10px",
+      padding: "5px 10px 10px 10px",
       position: "fixed", // Фиксированное позиционирование
-      bottom: "30",       // Прижимаем к низу
+      bottom: "10",       // Прижимаем к низу
       left: "0",         // На всю ширину
       right: "0",
       width: "100%",
       zIndex: "1000",    // Высокий z-index для приоритета
-      boxShadow: "0 -2px 10px rgba(0,0,0,0.3)"
+      boxShadow: "0 0px 10px rgba(0,0,0,0.3)"
       // backgroundColor: "#1a1a1a",
     }}>
       <Link to="/" style={navBtnStyle(pathname === "/")} className={linkClass('/')}>
