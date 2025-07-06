@@ -74,12 +74,25 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
     };
   }, []);
 
-  const handleWaveformSeek = (percent) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = percent * duration;
-    setProgress(percent);
-  };
+const handleWaveformSeek = async (percent) => {
+  const audio = audioRef.current;
+  if (!audio || !isFinite(duration)) return;
+
+  // Перемотка трека
+  audio.currentTime = percent * duration;
+  setProgress(percent);
+
+  // Возобновляем AudioContext, если он в состоянии suspended
+  if (window.audioContextRef?.state === "suspended") {
+    try {
+      await window.audioContextRef.resume();
+    } catch (e) {
+      console.warn("AudioContext resume error:", e);
+    }
+  }
+
+  // Если было на паузе — не запускаем автоматически (оставляем пользователю контроль)
+};
 
   const fmt = (s) => {
     if (!isFinite(s)) return "0:00";
