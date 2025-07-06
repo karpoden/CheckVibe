@@ -6,135 +6,89 @@ export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
   const [audioData, setAudioData] = useState(new Array(32).fill(0));
   const analyserRef = useRef(null);
   const dataArrayRef = useRef(null);
+  const animationRef = useRef(null);
+
   const center = size / 2;
   const base = size * 0.41;
   const amp = isPlaying ? size * 0.045 : 0;
 
-useEffect(() => {
-  if (!isPlaying || !audioElement) return;
+  useEffect(() => {
+    if (!isPlaying || !audioElement) return;
 
-  let cancelled = false;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioCtx.createAnalyser();
+    const source = audioCtx.createMediaElementSource(audioElement);
 
-  if (!window.audioContextRef) {
-    window.audioContextRef = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  const audioContext = window.audioContextRef;
+    analyser.fftSize = 64;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
 
-  if (audioContext.state === "suspended") {
-    audioContext.resume().catch(console.warn);
-  }
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
 
-  // Один source на элемент
-  if (!audioElement._sourceNode || audioElement._sourceNode.context !== audioContext) {
-    try {
-      const source = audioContext.createMediaElementSource(audioElement);
-      source.connect(audioContext.destination);
-      audioElement._sourceNode = source;
-    } catch (e) {
-      console.warn("MediaElementSource error (usually safe to ignore)", e.message);
-    }
-  }
+    analyserRef.current = analyser;
+    dataArrayRef.current = dataArray;
 
-  const analyser = audioContext.createAnalyser();
-  analyser.fftSize = 64;
-  const bufferLength = analyser.frequencyBinCount;
-  const dataArray = new Uint8Array(bufferLength);
-
-  try {
-    audioElement._sourceNode.connect(analyser);
-  } catch (e) {
-    // Уже подключено? Нормально
-  }
-
-  analyser.connect(audioContext.destination);
-
-  const updateAudioData = () => {
-    if (!cancelled) {
-        analyser.getByteFrequencyData(dataArray);
-        setAudioData([...dataArray]);
-        setPhase((p) => p + 0.15);
-        setGlowPhase((g) => g + 0.1);
-        }
+    const update = () => {
+      if (!analyserRef.current || !dataArrayRef.current) return;
+      analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+      setAudioData([...dataArrayRef.current]);
+      setPhase(p => p + 0.15);
+      setGlowPhase(g => g + 0.1);
+      animationRef.current = requestAnimationFrame(update);
     };
 
-  const interval = setInterval(updateAudioData, 40);
+    update();
 
     return () => {
-        cancelled = true;
-        clearInterval(interval);
-        try {
-            analyser.disconnect();
-        } catch {}
+      cancelAnimationFrame(animationRef.current);
+      analyser.disconnect();
+      source.disconnect();
+      audioCtx.close();
     };
   }, [isPlaying, audioElement]);
 
-
-
-  // 🔵 Построение точек эквалайзера
   const points = Array.from({ length: 201 }).map((_, i) => {
     const angle = (i / 200) * 2 * Math.PI;
     const r = base + amp + (isPlaying ? Math.sin(phase + i / 4) * amp : 0);
     return [center + Math.cos(angle) * r, center + Math.sin(angle) * r];
   });
 
-  const avgAudio = audioData.reduce((a, b) => a + b, 0) / audioData.length / 255;
-  const glowIntensity = isPlaying
-    ? 0.4 + avgAudio * 1.2 + Math.sin(glowPhase) * 0.3
-    : 0.4;
-  const innerGlowRadius = isPlaying
-    ? base +
-      amp +
-      avgAudio * amp * 2 +
-      (isPlaying ? Math.sin(phase + 1) * amp * 0.5 : 0) -
-      size * 0.01
-    : base + size * 0.05;
-  const colorPhase = Math.sin(glowPhase * 0.7 + avgAudio * 3) * 0.5 + 0.5;
+  const avg = audioData.reduce((a, b) => a + b, 0) / audioData.length / 255;
+  const glow = isPlaying ? 0.4 + avg * 1.2 + Math.sin(glowPhase) * 0.3 : 0.4;
+  const radius = isPlaying ? base + amp + avg * amp * 2 + Math.sin(phase + 1) * amp * 0.5 - size * 0.01 : base + size * 0.05;
+  const hue = Math.sin(glowPhase * 0.7 + avg * 3) * 0.5 + 0.5;
 
   return (
     <svg width={size} height={size} style={{ display: "block", overflow: "visible" }}>
       <defs>
         <radialGradient id="innerGlow" cx="50%" cy="50%" r="60%">
-          <stop
-            offset="0%"
-            stopColor={colorPhase > 0.5 ? "#fc5c7d" : "#6a82fb"}
-            stopOpacity={glowIntensity * 0.4}
-          />
-          <stop
-            offset="30%"
-            stopColor={colorPhase > 0.5 ? "#6a82fb" : "#fc5c7d"}
-            stopOpacity={glowIntensity * 0.3}
-          />
-          <stop offset="70%" stopColor="#6a82fb" stopOpacity={glowIntensity * 0.1} />
+          <stop offset="0%" stopColor={hue > 0.5 ? "#fc5c7d" : "#6a82fb"} stopOpacity={glow * 0.4} />
+          <stop offset="30%" stopColor={hue > 0.5 ? "#6a82fb" : "#fc5c7d"} stopOpacity={glow * 0.3} />
+          <stop offset="70%" stopColor="#6a82fb" stopOpacity={glow * 0.1} />
           <stop offset="100%" stopColor="transparent" stopOpacity="0" />
         </radialGradient>
-        <linearGradient id="eqgrad" x1="0" y1="0" x2={size} y2={size} gradientUnits="userSpaceOnUse">
+        <linearGradient id="eqgrad" x1="0" y1="0" x2={size} y2={size}>
           <stop stopColor="#6a82fb" />
           <stop offset="1" stopColor="#fc5c7d" />
         </linearGradient>
         <filter id="glow">
-          <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+          <feGaussianBlur stdDeviation="3" result="blur" />
           <feMerge>
-            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
         <mask id="lineMask">
           <path
-            d={`M ${points[0][0]},${points[0][1]} ${points.map((p) => `L ${p[0]},${p[1]}`).join(" ")} Z`}
+            d={`M ${points[0][0]},${points[0][1]} ${points.map(p => `L ${p[0]},${p[1]}`).join(' ')} Z`}
             fill="white"
           />
         </mask>
       </defs>
-
-      <circle
-        cx={center}
-        cy={center}
-        r={innerGlowRadius}
-        fill="url(#innerGlow)"
-        mask="url(#lineMask)"
-      />
+      <circle cx={center} cy={center} r={radius} fill="url(#innerGlow)" mask="url(#lineMask)" />
       <path
-        d={`M ${points[0][0]},${points[0][1]} ${points.map((p) => `L ${p[0]},${p[1]}`).join(" ")} Z`}
+        d={`M ${points[0][0]},${points[0][1]} ${points.map(p => `L ${p[0]},${p[1]}`).join(' ')} Z`}
         fill="none"
         stroke="url(#eqgrad)"
         strokeWidth={size * 0.012}
