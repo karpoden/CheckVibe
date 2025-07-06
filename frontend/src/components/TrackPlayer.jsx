@@ -1,114 +1,8 @@
 import React, { useRef, useState, useEffect } from "react";
+import { AvatarEqualizer } from "./AvatarEqualizer";
 
-// SVG эквалайзер-волна вокруг аватарки
-export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
-  const [phase, setPhase] = useState(0);
-  const [glowPhase, setGlowPhase] = useState(0);
-  const [audioData, setAudioData] = useState(new Array(32).fill(0));
-  const analyserRef = useRef(null);
-  const dataArrayRef = useRef(null);
-  const center = size / 2;
-  const base = size * 0.41;
-  const amp = isPlaying ? size * 0.045 : 0;
-
-  useEffect(() => {
-    if (!isPlaying || !audioElement) return;
-    
-    // Создаем анализатор аудио
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioContext.createAnalyser();
-    const source = audioContext.createMediaElementSource(audioElement);
-    
-    analyser.fftSize = 64;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    
-    source.connect(analyser);
-    analyser.connect(audioContext.destination);
-    
-    analyserRef.current = analyser;
-    dataArrayRef.current = dataArray;
-    
-    const updateAudioData = () => {
-      if (analyserRef.current && dataArrayRef.current) {
-        analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-        setAudioData([...dataArrayRef.current]);
-        setPhase(p => p + 0.15);
-        setGlowPhase(g => g + 0.1);
-      }
-    };
-    
-    const interval = setInterval(updateAudioData, 40);
-    return () => {
-      clearInterval(interval);
-      audioContext.close();
-    };
-  }, [isPlaying, audioElement]);
-
-  const points = Array.from({ length: 201 }).map((_, i) => {
-    const angle = (i / 200) * 2 * Math.PI;
-    const r = base + amp + (isPlaying ? Math.sin(phase + i / 4) * amp : 0);
-    return [
-      center + Math.cos(angle) * r,
-      center + Math.sin(angle) * r
-    ];
-  });
-
-  const avgAudio = audioData.reduce((a, b) => a + b, 0) / audioData.length / 255;
-  const glowIntensity = isPlaying ? 0.4 + avgAudio * 1.2 + Math.sin(glowPhase) * 0.3 : 0.4;
-  const innerGlowRadius = isPlaying ? base + amp + avgAudio * amp * 2 + (isPlaying ? Math.sin(phase + 1) * amp * 0.5 : 0) - size * 0.01 : base + size * 0.05;
-  const colorPhase = Math.sin(glowPhase * 0.7 + avgAudio * 3) * 0.5 + 0.5;
-
-  return (
-    <svg width={size} height={size} style={{ display: "block", overflow: "visible" }}>
-      <defs>
-        <radialGradient id="innerGlow" cx="50%" cy="50%" r="60%">
-          <stop offset="0%" stopColor={colorPhase > 0.5 ? "#fc5c7d" : "#6a82fb"} stopOpacity={glowIntensity * 0.4} />
-          <stop offset="30%" stopColor={colorPhase > 0.5 ? "#6a82fb" : "#fc5c7d"} stopOpacity={glowIntensity * 0.3} />
-          <stop offset="70%" stopColor="#6a82fb" stopOpacity={glowIntensity * 0.1} />
-          <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id="eqgrad" x1="0" y1="0" x2={size} y2={size} gradientUnits="userSpaceOnUse">
-          <stop stopColor="#6a82fb" />
-          <stop offset="1" stopColor="#fc5c7d" />
-        </linearGradient>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-          <feMerge> 
-            <feMergeNode in="coloredBlur"/>
-            <feMergeNode in="SourceGraphic"/> 
-          </feMerge>
-        </filter>
-        <mask id="lineMask">
-          <path
-            d={`M ${points[0][0]},${points[0][1]} ${points.map(p => `L ${p[0]},${p[1]}`).join(' ')} Z`}
-            fill="white"
-          />
-        </mask>
-      </defs>
-      <circle
-        cx={center}
-        cy={center}
-        r={base + amp * 2}
-        fill="url(#innerGlow)"
-        mask="url(#lineMask)"
-      />
-      <path
-        d={`M ${points[0][0]},${points[0][1]} ${points.map(p => `L ${p[0]},${p[1]}`).join(' ')} Z`}
-        fill="none"
-        stroke="url(#eqgrad)"
-        strokeWidth={size * 0.012}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        filter="url(#glow)"
-      />
-    </svg>
-  );
-}
-
-// Волновая форма (waveform)
 function Waveform({ src, progress, onSeek }) {
-  const [peaks, setPeaks] = React.useState([]);
+  const [peaks, setPeaks] = useState([]);
 
   useEffect(() => {
     const arr = Array.from({ length: 64 }, () =>
@@ -128,7 +22,6 @@ function Waveform({ src, progress, onSeek }) {
         cursor: "pointer",
         gap: 1,
         userSelect: "none",
-
       }}
       onPointerDown={e => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -195,7 +88,6 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
     return `${m}:${ss < 10 ? "0" : ""}${ss}`;
   };
 
-  // Play/Pause по тапу на аватарку
   const handleAvatarClick = () => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -204,17 +96,14 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
       setIsPlaying(false);
       if (onPause) onPause();
     } else {
-      audio.play();
-      setIsPlaying(true);
-      if (onPlay) onPlay();
+      audio.play().then(() => {
+        setIsPlaying(true);
+        if (onPlay) onPlay();
+      }).catch((err) => {
+        console.warn("Play error:", err);
+      });
     }
   };
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (!isPlaying) audio.pause();
-  }, [isPlaying]);
 
   useEffect(() => {
     if (shouldPause && isPlaying) {
@@ -254,10 +143,9 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
             zIndex: 2,
             cursor: "pointer",
             transition: "box-shadow 0.2s",
-pointerEvents: "auto"
+            pointerEvents: "auto"
           }}
         />
-        {/* Полупрозрачная иконка play поверх аватарки */}
         {!isPlaying && (
           <div
             style={{
@@ -294,13 +182,11 @@ pointerEvents: "auto"
           setIsPlaying(false);
           setProgress(0);
           setDuration(0);
-          setCurrent(0);  
-  }}
+          setCurrent(0);
+        }}
         style={{ display: "none" }}
       />
-      {/* Волна */}
       <Waveform src={src} progress={progress} onSeek={handleWaveformSeek} />
-      {/* Время под волной */}
       <div style={{
         color: "#b3b3b3",
         fontSize: "0.97em",
@@ -312,5 +198,5 @@ pointerEvents: "auto"
         {fmt(current)} / {fmt(duration)}
       </div>
     </div>
-    );
+  );
 }
