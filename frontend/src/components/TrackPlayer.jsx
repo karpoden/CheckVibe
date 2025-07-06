@@ -63,16 +63,27 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    const update = () => {
-      setCurrent(audio.currentTime);
-      setProgress(audio.duration ? audio.currentTime / audio.duration : 0);
+
+    const handleMetadata = () => {
+      setDuration(audio.duration);
+      setProgress(0);
+      setCurrent(0);
     };
-    audio.addEventListener("timeupdate", update);
-    audio.addEventListener("loadedmetadata", () => setDuration(audio.duration));
+
+    audio.addEventListener("loadedmetadata", handleMetadata);
+
     return () => {
-      audio.removeEventListener("timeupdate", update);
+      audio.removeEventListener("loadedmetadata", handleMetadata);
+      try {
+        if (audio._sourceNode) {
+          audio._sourceNode.disconnect();
+          delete audio._sourceNode;
+        }
+      } catch (e) {
+        console.warn("Error cleaning up audio node", e);
+      }
     };
-  }, []);
+  }, [src]);
 
 const handleWaveformSeek = async (percent) => {
   const audio = audioRef.current;

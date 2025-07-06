@@ -10,66 +10,64 @@ export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
   const base = size * 0.41;
   const amp = isPlaying ? size * 0.045 : 0;
 
-    useEffect(() => {
-        if (!isPlaying || !audioElement) return;
+useEffect(() => {
+  if (!isPlaying || !audioElement) return;
 
-        let cancelled = false;
+  let cancelled = false;
 
-        if (!window.audioContextRef) {
-            window.audioContextRef = new (window.AudioContext || window.webkitAudioContext)();
+  if (!window.audioContextRef) {
+    window.audioContextRef = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  const audioContext = window.audioContextRef;
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume().catch(console.warn);
+  }
+
+  // Один source на элемент
+  if (!audioElement._sourceNode || audioElement._sourceNode.context !== audioContext) {
+    try {
+      const source = audioContext.createMediaElementSource(audioElement);
+      source.connect(audioContext.destination);
+      audioElement._sourceNode = source;
+    } catch (e) {
+      console.warn("MediaElementSource error (usually safe to ignore)", e.message);
+    }
+  }
+
+  const analyser = audioContext.createAnalyser();
+  analyser.fftSize = 64;
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+
+  try {
+    audioElement._sourceNode.connect(analyser);
+  } catch (e) {
+    // Уже подключено? Нормально
+  }
+
+  analyser.connect(audioContext.destination);
+
+  const updateAudioData = () => {
+    if (!cancelled) {
+        analyser.getByteFrequencyData(dataArray);
+        setAudioData([...dataArray]);
+        setPhase((p) => p + 0.15);
+        setGlowPhase((g) => g + 0.1);
         }
-        const audioContext = window.audioContextRef;
+    };
 
-  // ✅ Resume AudioContext обязательно
-        if (audioContext.state === "suspended") {
-            audioContext.resume().catch(console.warn);
-        }
+  const interval = setInterval(updateAudioData, 40);
 
-  // ✅ Проверка и пересоздание source только если нужно
-        if (!audioElement._sourceNode || audioElement._sourceNode.context !== audioContext) {
-            try {
-            const source = audioContext.createMediaElementSource(audioElement);
-            source.connect(audioContext.destination);
-            audioElement._sourceNode = source;
-            } catch (e) {
-                console.warn("MediaElementSource error", e.message);
-            }
-        }
+    return () => {
+        cancelled = true;
+        clearInterval(interval);
+        try {
+            analyser.disconnect();
+        } catch {}
+    };
+  }, [isPlaying, audioElement]);
 
-        const analyser = audioContext.createAnalyser();
-        analyser.fftSize = 64;
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-
-        if (audioElement._sourceNode) {
-            try {
-            audioElement._sourceNode.connect(analyser);
-            } catch (e) {
-                console.warn("Source already connected?", e.message);
-            }
-        }
-
-        analyser.connect(audioContext.destination);
-
-        const updateAudioData = () => {
-            if (!cancelled) {
-            analyser.getByteFrequencyData(dataArray);
-            setAudioData([...dataArray]);
-            setPhase((p) => p + 0.15);
-            setGlowPhase((g) => g + 0.1);
-            }
-        };
-
-        const interval = setInterval(updateAudioData, 40);
-
-        return () => {
-            cancelled = true;
-            clearInterval(interval);
-            try {
-                analyser.disconnect();
-            } catch {}
-        };
-        }, [isPlaying, audioElement]);
 
 
   // 🔵 Построение точек эквалайзера
