@@ -257,7 +257,10 @@ export default function RandomPlayer() {
                   zIndex: 2,
                   pointerEvents: "none"
                 }}>
-                  <span>💰 {myCoins}</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <img src="/coin.svg" alt="coins" width="16" height="16" />
+                    {myCoins}
+                  </span>
                   <motion.button
                     whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.8 }}
@@ -311,9 +314,12 @@ export default function RandomPlayer() {
                   fontWeight: "bold",
                   fontSize: "1.1em",
                   cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
                 }}
               >
-                👎
+                <img src="/thumbs-down.svg" alt="dislike" width="24" height="24" />
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.1 }}
@@ -332,9 +338,12 @@ export default function RandomPlayer() {
                   fontWeight: "bold",
                   fontSize: "1.1em",
                   cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
                 }}
               >
-                👍
+                <img src="/thumbs-up.svg" alt="like" width="24" height="24" />
               </motion.button>
             </div>
           </motion.div>
