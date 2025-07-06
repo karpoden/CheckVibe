@@ -171,7 +171,7 @@ export default function Profile() {
         gap: 10
       }}>
         Баланс: <span style={{ color: "#6a82fb", fontWeight: 700 }}>{myCoins} VibeCoins</span>
-        <img src="/coin.svg" alt="coins" width="20" height="20" />
+        <Star size={20} color="#fff700" fill="#fff700" />
       </div>
       {actionMsg && (
         <div style={{
@@ -237,14 +237,8 @@ export default function Profile() {
                   background: "rgba(36,37,44,0.6)",
                   borderRadius: 8
                 }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <img src="/thumbs-up.svg" alt="likes" width="16" height="16" />
-                    <b style={{ color: "#6a82fb" }}>{track.likes}</b>
-                  </span>
-                  <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <img src="/rocket.svg" alt="views" width="16" height="16" />
-                    <b style={{ color: "#fc5c7d" }}>{track.views}</b>
-                  </span>
+                  <span>👍 <b style={{ color: "#6a82fb" }}>{track.likes}</b></span>
+                  <span>🚀 <b style={{ color: "#fc5c7d" }}>{track.views}</b></span>
                 </div>
                 <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16 }}>
                   <div style={{ flex: 1 }}>

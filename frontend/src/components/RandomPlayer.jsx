@@ -257,10 +257,7 @@ export default function RandomPlayer() {
                   zIndex: 2,
                   pointerEvents: "none"
                 }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <img src="/coin.svg" alt="coins" width="16" height="16" />
-                    {myCoins}
-                  </span>
+                  <span>💰 {myCoins}</span>
                   <motion.button
                     whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.8 }}
