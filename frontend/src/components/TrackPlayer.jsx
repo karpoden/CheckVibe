@@ -12,75 +12,40 @@ export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
   const amp = isPlaying ? size * 0.045 : 0;
 
   useEffect(() => {
-    if (!isPlaying || !audioElement) {
-      // Очищаем данные при остановке
-      setAudioData(new Array(32).fill(0));
-      return;
-    }
+    if (!isPlaying || !audioElement) return;
     
-    // Проверяем, не создан ли уже контекст для этого элемента
-    if (audioElement._audioContextCreated) {
-      // Просто запускаем обновление данных
-      const updateAudioData = () => {
-        try {
-          if (analyserRef.current && dataArrayRef.current) {
-            analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-            setAudioData([...dataArrayRef.current]);
-            setPhase(p => p + 0.15);
-            setGlowPhase(g => g + 0.1);
-          }
-        } catch (e) {
-          console.warn('Error updating audio data:', e);
-        }
-      };
-      
-      const interval = setInterval(updateAudioData, 40);
-      return () => clearInterval(interval);
-    }
+    // Создаем анализатор аудио
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+    const source = audioContext.createMediaElementSource(audioElement);
     
-    try {
-      // Создаем анализатор аудио
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const analyser = audioContext.createAnalyser();
-      const source = audioContext.createMediaElementSource(audioElement);
-      
-      // Помечаем элемент как уже связанный с контекстом
-      audioElement._audioContextCreated = true;
+    analyser.fftSize = 64;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
     
-      analyser.fftSize = 64;
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-      
-      source.connect(analyser);
-      analyser.connect(audioContext.destination);
-      
-      analyserRef.current = analyser;
-      dataArrayRef.current = dataArray;
-      
-      const updateAudioData = () => {
-        try {
-          if (analyserRef.current && dataArrayRef.current && audioContext.state !== 'closed') {
-            analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-            setAudioData([...dataArrayRef.current]);
-            setPhase(p => p + 0.15);
-            setGlowPhase(g => g + 0.1);
-          }
-        } catch (e) {
-          console.warn('Error updating audio data:', e);
-        }
-      };
-      
-      const interval = setInterval(updateAudioData, 40);
-      return () => {
-        clearInterval(interval);
-      };
-    } catch (e) {
-      console.warn('Error creating audio context:', e);
-      return;
-    }
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
+    
+    analyserRef.current = analyser;
+    dataArrayRef.current = dataArray;
+    
+    const updateAudioData = () => {
+      if (analyserRef.current && dataArrayRef.current) {
+        analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+        setAudioData([...dataArrayRef.current]);
+        setPhase(p => p + 0.15);
+        setGlowPhase(g => g + 0.1);
+      }
+    };
+    
+    const interval = setInterval(updateAudioData, 40);
+    return () => {
+      clearInterval(interval);
+      audioContext.close();
+    };
   }, [isPlaying, audioElement]);
 
-  const points = Array.from({ length: 200 }).map((_, i) => {
+  const points = Array.from({ length: 201 }).map((_, i) => {
     const angle = (i / 200) * 2 * Math.PI;
     const r = base + amp + (isPlaying ? Math.sin(phase + i / 4) * amp : 0);
     return [
@@ -195,7 +160,7 @@ function Waveform({ src, progress, onSeek }) {
   );
 }
 
-export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPause,  onEnded, shouldPlay }) {
+export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPause }) {
   const audioRef = useRef();
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -211,54 +176,10 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
     };
     audio.addEventListener("timeupdate", update);
     audio.addEventListener("loadedmetadata", () => setDuration(audio.duration));
-    
-    // Настройка Media Session API для фонового воспроизведения
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: 'CheckVibe Track',
-        artist: 'Unknown Artist',
-        artwork: [
-          { src: avatarUrl || '/vite.svg', sizes: '96x96', type: 'image/png' }
-        ]
-      });
-      
-      navigator.mediaSession.setActionHandler('play', () => {
-        if (audio && audio.paused) {
-          audio.play();
-          setIsPlaying(true);
-          if (onPlay) onPlay();
-        }
-      });
-      
-      navigator.mediaSession.setActionHandler('pause', () => {
-        if (audio && !audio.paused) {
-          audio.pause();
-          setIsPlaying(false);
-          if (onPause) onPause();
-        }
-      });
-    }
-    
-    // Отслеживание смены видимости страницы
-    const handleVisibilityChange = () => {
-      if (document.hidden && audio && !audio.paused) {
-        // При сворачивании приложения проверяем состояние
-        setTimeout(() => {
-          if (audio.paused && isPlaying) {
-            setIsPlaying(false);
-            if (onPause) onPause();
-          }
-        }, 100);
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
     return () => {
       audio.removeEventListener("timeupdate", update);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [avatarUrl]);
+  }, []);
 
   const handleWaveformSeek = (percent) => {
     const audio = audioRef.current;
@@ -306,17 +227,6 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
     }
   }, [shouldPause, isPlaying, onPause]);
 
-  useEffect(() => {
-  if (shouldPlay && !isPlaying) {
-      const audio = audioRef.current;
-      if (audio) {
-        audio.play();
-        setIsPlaying(true);
-        if (onPlay) onPlay();
-      }
-    }
-  }, [shouldPlay, isPlaying, onPlay]);
-
   return (
     <div style={{
       display: "flex",
@@ -330,11 +240,7 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
         <img
           src={avatarUrl || "/vite.svg"}
           alt="avatar"
-          onClick={handleAvatarClick}
-          onTouchStart={(e) => {
-            e.preventDefault();
-            handleAvatarClick();
-          }}
+          onPointerDown={handleAvatarClick}
           style={{
             width: 80,
             height: 80,
@@ -382,19 +288,14 @@ pointerEvents: "auto"
       <audio
         ref={audioRef}
         src={src}
-        preload="metadata"
-        playsInline
-        crossOrigin="anonymous"
-        onEnded={() => {
-          setIsPlaying(false);
-          if (onEnded) onEnded();
-        }}
+        preload="auto"
+        onEnded={() => setIsPlaying(false)}
         onError={() => {
           setIsPlaying(false);
           setProgress(0);
           setDuration(0);
           setCurrent(0);  
-        }}
+  }}
         style={{ display: "none" }}
       />
       {/* Волна */}
