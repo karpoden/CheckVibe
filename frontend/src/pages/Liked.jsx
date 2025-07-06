@@ -56,7 +56,7 @@ export default function Liked() {
         }}>
           Понравившиеся треки
         </h2>
-        <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+        {/* <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
           <span style={{ color: "#fff", fontSize: "0.9em" }}>Автопроигрывание</span>
           <div style={{
             width: 40,
@@ -78,7 +78,7 @@ export default function Liked() {
               transition: "left 0.2s"
             }} />
           </div>
-        </label>
+        </label> */}
       </div>
       {/* <div style={{
         background: "rgba(36,37,44,0.85)",
