@@ -10,65 +10,67 @@ export function AvatarEqualizer({ isPlaying, size = 200, audioElement }) {
   const base = size * 0.41;
   const amp = isPlaying ? size * 0.045 : 0;
 
-  useEffect(() => {
-    if (!isPlaying || !audioElement) return;
+    useEffect(() => {
+        if (!isPlaying || !audioElement) return;
 
-    let cancelled = false;
+        let cancelled = false;
 
-    // ✅ Создаём и сохраняем глобальный AudioContext
-    if (!window.audioContextRef) {
-      window.audioContextRef = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    const audioContext = window.audioContextRef;
+        if (!window.audioContextRef) {
+            window.audioContextRef = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const audioContext = window.audioContextRef;
 
-    // ✅ Анализатор и буфер
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 64;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
+  // ✅ Resume AudioContext обязательно
+        if (audioContext.state === "suspended") {
+            audioContext.resume().catch(console.warn);
+        }
 
-    analyserRef.current = analyser;
-    dataArrayRef.current = dataArray;
+  // ✅ Проверка и пересоздание source только если нужно
+        if (!audioElement._sourceNode || audioElement._sourceNode.context !== audioContext) {
+            try {
+            const source = audioContext.createMediaElementSource(audioElement);
+            source.connect(audioContext.destination);
+            audioElement._sourceNode = source;
+            } catch (e) {
+                console.warn("MediaElementSource error", e.message);
+            }
+        }
 
-    // ✅ Подключение к audioElement
-    let source;
-    try {
-      source = audioContext.createMediaElementSource(audioElement);
-      source.connect(analyser);
-      analyser.connect(audioContext.destination);
-    } catch (e) {
-      console.warn("createMediaElementSource error:", e.message);
-    }
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 64;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
 
-    const updateAudioData = () => {
-      if (!cancelled && analyserRef.current && dataArrayRef.current) {
-        analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-        setAudioData([...dataArrayRef.current]);
-        setPhase((p) => p + 0.15);
-        setGlowPhase((g) => g + 0.1);
-      }
-    };
+        if (audioElement._sourceNode) {
+            try {
+            audioElement._sourceNode.connect(analyser);
+            } catch (e) {
+                console.warn("Source already connected?", e.message);
+            }
+        }
 
-    const interval = setInterval(updateAudioData, 40);
+        analyser.connect(audioContext.destination);
 
-    // ✅ Resume AudioContext при необходимости
-    if (audioContext.state === "suspended") {
-      audioContext.resume().catch((e) =>
-        console.warn("AudioContext resume error:", e)
-      );
-    }
+        const updateAudioData = () => {
+            if (!cancelled) {
+            analyser.getByteFrequencyData(dataArray);
+            setAudioData([...dataArray]);
+            setPhase((p) => p + 0.15);
+            setGlowPhase((g) => g + 0.1);
+            }
+        };
 
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-      try {
-        if (source) source.disconnect();
-        analyser.disconnect();
-      } catch (e) {
-        console.warn("Cleanup disconnect error:", e.message);
-      }
-    };
-  }, [isPlaying, audioElement]);
+        const interval = setInterval(updateAudioData, 40);
+
+        return () => {
+            cancelled = true;
+            clearInterval(interval);
+            try {
+                analyser.disconnect();
+            } catch {}
+        };
+        }, [isPlaying, audioElement]);
+
 
   // 🔵 Построение точек эквалайзера
   const points = Array.from({ length: 201 }).map((_, i) => {
