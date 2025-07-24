@@ -11,7 +11,7 @@ async def cmd_start(message: types.Message):
     keyboard.add(
         types.InlineKeyboardButton(
             text="Открыть CheckVibe",
-            web_app=types.WebAppInfo(url="https://checkvibe.ru")
+            web_app=types.WebAppInfo(url="https://checkvibeapp.ru")
         )
     )
     await message.answer("Нажми кнопку ниже, чтобы открыть приложение 👇", reply_markup=keyboard)
