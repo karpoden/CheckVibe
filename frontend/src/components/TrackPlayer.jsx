@@ -88,20 +88,40 @@ export default function TrackPlayer({ src, avatarUrl, onPlay, onPause, shouldPau
     return `${m}:${ss < 10 ? "0" : ""}${ss}`;
   };
 
-  const handleAvatarClick = () => {
+  const handleAvatarClick = async () => {
     const audio = audioRef.current;
     if (!audio) return;
+    
     if (isPlaying) {
       audio.pause();
       setIsPlaying(false);
       if (onPause) onPause();
     } else {
-      audio.play().then(() => {
-        setIsPlaying(true);
-        if (onPlay) onPlay();
-      }).catch((err) => {
+      try {
+        // Проверяем, можем ли мы воспроизвести аудио
+        if (audio.readyState >= 2) { // HAVE_CURRENT_DATA
+          await audio.play();
+          setIsPlaying(true);
+          if (onPlay) onPlay();
+        } else {
+          // Ждем загрузки аудио
+          audio.addEventListener('canplay', async () => {
+            try {
+              await audio.play();
+              setIsPlaying(true);
+              if (onPlay) onPlay();
+            } catch (err) {
+              console.warn("Play error after canplay:", err);
+            }
+          }, { once: true });
+        }
+      } catch (err) {
         console.warn("Play error:", err);
-      });
+        // Если автовоспроизведение заблокировано, просто игнорируем ошибку
+        if (err.name !== 'NotAllowedError' && err.name !== 'NotSupportedError') {
+          throw err;
+        }
+      }
     }
   };
 

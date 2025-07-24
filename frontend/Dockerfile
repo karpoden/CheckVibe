@@ -2,19 +2,24 @@
 FROM node:18 as builder
 
 WORKDIR /app
-COPY . .
-RUN npm install && npm run build
+
+# Копируем package.json и package-lock.json
+COPY frontend/package*.json ./
+RUN npm ci --only=production
+
+# Копируем исходный код
+COPY frontend/ .
+
+# Собираем приложение
+RUN npm run build
 
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
 
-# Удалим default.conf, если есть
+# Удаляем стандартную конфигурацию
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Копируем свою настройку Nginx
-COPY nginx.conf /etc/nginx/conf.d
-
-# Копируем собранный фронтенд
+# Копируем собранное приложение
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80
