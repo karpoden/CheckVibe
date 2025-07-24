@@ -17,7 +17,7 @@ services:
     build:
       context: ./frontend
     ports:
-      - "5173:5173"
+      - "8080:80"  # теперь frontend отдаётся nginx на 80, наружу как 8080
     depends_on:
       - backend
     container_name: checkvibe-frontend
@@ -35,3 +35,4 @@ services:
 networks:
   checkvibe:
     driver: bridge
+

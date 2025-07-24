@@ -1,13 +1,22 @@
-FROM node:18
+# Stage 1: Build Vite app
+FROM node:18 as builder
 
 WORKDIR /app
-
-COPY package*.json ./
-RUN npm install
-
 COPY . .
+RUN npm install && npm run build
 
-EXPOSE 5173
+# Stage 2: Serve with Nginx
+FROM nginx:alpine
 
-CMD ["npm", "run", "dev"] 
- # если фронт запускается командой dev на 5173
+# Удалим default.conf, если есть
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Копируем свою настройку Nginx
+COPY nginx.conf /etc/nginx/conf.d
+
+# Копируем собранный фронтенд
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+

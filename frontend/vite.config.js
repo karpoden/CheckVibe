@@ -18,12 +18,7 @@ export default defineConfig({
       },
     },
     allowedHosts: [
-      'localhost',
-      '127.0.0.1',
-      'checkvibe.ru',
-      'www.checkvibe.ru',
-      'checkvibe.ru:443',
-      'checkvibe.ru:5173'
+      'checkvibeapp.ru'
     ],
   },
 });
